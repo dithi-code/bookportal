@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ book.title }}</title>
+
+    <style>
+        body {
+            margin:0;
+            padding:0;
+            background: linear-gradient(135deg, #89f7fe, #66a6ff);
+            font-family: "Poppins", sans-serif;
+            color: #fff;
+        }
+
+        .viewer-box {
+            width: 80%;
+            margin: 20px auto;
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(8px);
+            text-align: center;
+        }
+
+        canvas { background: #fff; border-radius: 10px; }
+        button {
+            padding: 10px 20px;
+            background: #0044ff;
+            border: none;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+
+</head>
+<body>
+
+<div class="viewer-box">
+    <h2>{{ book.title }}</h2>
+
+    {% if book.type == "pdf" %}
+        <canvas id="pdf-view"></canvas><br>
+        <button onclick="prevPage()">Previous</button>
+        <button onclick="nextPage()">Next</button>
+
+        <script>
+            let url = "/uploads/{{ book.filename }}";
+            let pdfDoc = null;
+            let pageNum = 1;
+
+            pdfjsLib.getDocument(url).promise.then(function (pdf) {
+                pdfDoc = pdf;
+                renderPage(pageNum);
+            });
+
+            function renderPage(num) {
+                pdfDoc.getPage(num).then(function (page) {
+                    let canvas = document.getElementById("pdf-view");
+                    let ctx = canvas.getContext("2d");
+                    let vp = page.getViewport({ scale: 1.4 });
+
+                    canvas.height = vp.height;
+                    canvas.width = vp.width;
+
+                    page.render({ canvasContext: ctx, viewport: vp });
+                });
+            }
+
+            function nextPage() {
+                if (pageNum < pdfDoc.numPages) pageNum++;
+                renderPage(pageNum);
+
+                fetch("/notify/pdf_next/{{ book.id }}");
+            }
+
+            function prevPage() {
+                if (pageNum > 1) pageNum--;
+                renderPage(pageNum);
+
+                fetch("/notify/pdf_prev/{{ book.id }}");
+            }
+
+            // notify admin if screenshot attempt
+            document.addEventListener("keyup", (e) => {
+                if (e.key === "PrintScreen") {
+                    fetch("/notify/screenshot/{{ book.id }}");
+                }
+            });
+        </script>
+
+    {% else %}
+        <img src="/uploads/{{ book.filename }}" width="80%" style="border-radius: 10px;">
+    {% endif %}
+
+</div>
+</body>
+</html>

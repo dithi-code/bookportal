@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Book</title>
+    <style>
+        body {
+            font-family: Poppins, sans-serif;
+            background: #eef3ff;
+            padding: 30px;
+        }
+        .box {
+            width: 400px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px #0002;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            font-size: 16px;
+        }
+        button { background: #4a6cf7; color: white; border: none; cursor: pointer; }
+        .colors { margin: 10px 0; }
+        .colors label { display: block; margin: 4px 0; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>Upload Book</h2>
+
+    <form action="/admin/upload" method="POST" enctype="multipart/form-data">
+        
+        <label>Choose File</label>
+        <input type="file" name="file" required>
+
+        <!-- LEVEL -->
+        <label>Level</label>
+        <select name="level" required>
+            <option value="1">Level 1</option>
+            <option value="2">Level 2</option>
+            <option value="3">Level 3</option>
+            <option value="4">Level 4</option>
+            <option value="5">Level 5</option>
+            <option value="6">Level 6</option>
+            <option value="7">Level 7</option>
+        </select>
+
+        <!-- COLOR CHECKBOXES -->
+        <label>Colors</label>
+        <div class="colors">
+            <label><input type="checkbox" name="colors" value="red"> Red Level</label>
+            <label><input type="checkbox" name="colors" value="yellow"> Yellow Level</label>
+            <label><input type="checkbox" name="colors" value="green"> Green Level</label>
+            <label><input type="checkbox" name="colors" value="blue"> Blue Level</label>
+        </div>
+
+        <!-- CATEGORY -->
+        <label>Category</label>
+        <select name="category" required>
+            <option value="story">Story</option>
+            <option value="words">Words</option>
+            <option value="workout">Workout</option>
+            <option value="comprehension">Comprehension</option>
+            <option value="test">Test</option>
+        </select>
+
+        <button type="submit">Upload</button>
+    </form>
+</div>
+
+</body>
+</html>
+

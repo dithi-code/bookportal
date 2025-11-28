@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>{{ book.original_name }}</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.min.js"></script>
+
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: #000;
+    overflow: hidden;
+  }
+
+  /* Scrollable container */
+  #viewerContainer {
+    position: fixed;
+    inset: 0;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding: 20px 0;
+  }
+
+  canvas {
+    display: block;
+    margin: 0 auto 20px auto;
+    max-width: 95vw;
+    background: #111;
+  }
+
+  /* Disable selection & drag */
+  body, canvas {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+  }
+</style>
+</head>
+
+<body>
+
+<div id="viewerContainer"></div>
+
+<script>
+/* ---------- helper: sendAttempt ---------- */
+function sendAttempt(type) {
+  fetch("/notify_attempt", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: "type=" + encodeURIComponent(type) +
+          "&book=" + encodeURIComponent("{{ book.original_name }}")
+  });
+}
+
+/* ---------- block shortcuts / right click ---------- */
+(function blockEvents() {
+  window.addEventListener("keydown", function(e) {
+    const blocked = (
+      e.key === "F12" ||
+      (e.ctrlKey && e.shiftKey && ["I","J","C"].includes(e.key)) ||
+      (e.ctrlKey && ["P","S","U","O","A","C"].includes(e.key))
+    );
+    if (blocked) {
+      e.preventDefault();
+      e.stopPropagation();
+      sendAttempt("Blocked Shortcut: " + e.key);
+      return false;
+    }
+  }, true);
+
+  window.addEventListener("contextmenu", function(e){
+    e.preventDefault();
+    sendAttempt("Right Click Attempt");
+    return false;
+  }, true);
+
+  window.addEventListener("dragstart", function(e){
+    e.preventDefault();
+    sendAttempt("Drag Attempt");
+    return false;
+  }, true);
+
+  document.addEventListener("selectstart", function(e){
+    e.preventDefault();
+    return false;
+  }, true);
+})();
+
+/* ---------- PDF.js multi-page rendering ---------- */
+const url = "{{ url_for('stream_book', book_id=book.id) }}";
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.worker.min.js";
+
+const viewer = document.getElementById("viewerContainer");
+
+async function loadPDF() {
+  try {
+    const resp = await fetch(url);
+    const data = await resp.arrayBuffer();
+
+    const pdf = await pdfjsLib.getDocument({ data }).promise;
+    const total = pdf.numPages;
+
+    sendAttempt("Opened PDF");
+
+    for (let pageNum = 1; pageNum <= total; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const viewport = page.getViewport({ scale: 1.5 });
+
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = viewport.width * dpr;
+      canvas.height = viewport.height * dpr;
+      canvas.style.width = viewport.width + "px";
+      canvas.style.height = viewport.height + "px";
+
+      await page.render({
+        canvasContext: ctx,
+        viewport: page.getViewport({ scale: 1.5 * dpr })
+      }).promise;
+
+      viewer.appendChild(canvas);
+    }
+  } catch (e) {
+    alert("Error loading PDF.");
+    console.error(e);
+  }
+}
+
+loadPDF();
+</script>
+
+</body>
+</html>
