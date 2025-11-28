@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: book-portal
+    env: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn bp:app
+    disk:
+      name: books-storage
+      mountPath: /opt/render/project/src/storage
+      sizeGB: 1
