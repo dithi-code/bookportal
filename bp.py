@@ -296,23 +296,28 @@ def upload_book():
     # Category
     category = request.form.get('category', 'Story')
 
-    safe = secure_filename(f.filename)
-    base, ext = os.path.splitext(safe)
-    timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
-    stored = f"{base}_{timestamp}{ext}"
-    f.save(os.path.join(app.config['BOOKS_FOLDER'], stored))
-    
-    b = Book(
-        filename=stored,
-        original_name=f.filename,
-        levels=levels_str,
-        colors=colors_str,
-        category=category,
-        uploader_id=current_user.id
-    )
+safe = secure_filename(f.filename)
+base, ext = os.path.splitext(safe)
+timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
+stored = f"{base}_{timestamp}{ext}"
 
+# Save file
+f.save(os.path.join(app.config['BOOKS_FOLDER'], stored))
+
+# Create book entry
+b = Book(
+    filename=stored,
+    original_name=f.filename,
+    levels=levels_str,
+    colors=colors_str,
+    category=category,
+    uploader_id=current_user.id
+)
+
+# Save to DB
 db.session.add(b)
 db.session.commit()
+
 
 
     flash('Uploaded successfully')
