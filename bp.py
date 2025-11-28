@@ -301,15 +301,15 @@ def upload_book():
     timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
     stored = f"{base}_{timestamp}{ext}"
     f.save(os.path.join(app.config['BOOKS_FOLDER'], stored))
-
-   b = Book(
-    filename=stored,
-    original_name=f.filename,
-    levels=levels_str,
-    colors=colors_str,
-    category=category,
-    uploader_id=current_user.id
-)
+    
+    b = Book(
+        filename=stored,
+        original_name=f.filename,
+        levels=levels_str,
+        colors=colors_str,
+        category=category,
+        uploader_id=current_user.id
+    )
 
 db.session.add(b)
 db.session.commit()
