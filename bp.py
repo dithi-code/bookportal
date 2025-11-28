@@ -19,6 +19,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'replace-with-a-secure-key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///book_portal.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+PORT = int(os.environ.get("PORT", 8080))
 
 
 STORAGE_FOLDER = "/opt/render/project/src/storage/books"
