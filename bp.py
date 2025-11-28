@@ -20,10 +20,11 @@ app.config['SECRET_KEY'] = 'replace-with-a-secure-key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///book_portal.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Where uploaded books go (you chose static/books/)
-BOOKS_FOLDER = os.path.join('static', 'books')
-os.makedirs(BOOKS_FOLDER, exist_ok=True)
-app.config['BOOKS_FOLDER'] = BOOKS_FOLDER
+
+STORAGE_FOLDER = "/opt/render/project/src/storage/books"
+os.makedirs(STORAGE_FOLDER, exist_ok=True)
+app.config["BOOKS_FOLDER"] = STORAGE_FOLDER
+
 
 ALLOWED_EXT = {'pdf', 'jpg', 'jpeg', 'png'}
 
@@ -58,6 +59,7 @@ class Book(db.Model):
     levels = db.Column(db.String(50))        # example: "1,3,5"
     colors = db.Column(db.String(50))        # example: "red,green"
     category = db.Column(db.String(50))      # example: "story"
+    uploader_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
 
 
 
@@ -301,11 +303,14 @@ def upload_book():
     f.save(os.path.join(app.config['BOOKS_FOLDER'], stored))
 
     b = Book(
-        filename=stored,
-        original_name=f.filename,
-        levels=levels_str,   # store as comma-separated string
-        colors=colors_str,
-        category=category
+    filename=stored,
+    original_name=f.filename,
+    levels=levels_str,
+    colors=colors_str,
+    category=category,
+    uploader_id=current_user.id
+)
+ry=category
     )
     db.session.add(b)
     db.session.commit()
@@ -340,42 +345,18 @@ from flask import send_file, abort, make_response
 @app.route('/books/stream/<int:book_id>')
 @login_required
 def stream_book(book_id):
-    """
-    Serve the book file *inline* for viewing in an iframe.
-    Teachers are allowed to view (we log attempts separately via JS).
-    This sets Content-Disposition:inline so the browser opens the PDF instead of forcing attachment.
-    """
     b = Book.query.get_or_404(book_id)
     path = os.path.join(app.config['BOOKS_FOLDER'], b.filename)
-    if not os.path.exists(path):
-        abort(404)
 
-    # If teacher requests direct static file URL (we still log), but viewing via stream is allowed.
-    # Return file with inline disposition
+    if not os.path.exists(path):
+        return abort(404)
+
     response = make_response(send_file(path))
-    # Force inline display instead of attachment
-    response.headers["Content-Disposition"] = f'inline; filename="{b.original_name or b.filename}"'
-    # Prevent caching
-    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private"
+    response.headers["Content-Disposition"] = f'inline; filename="{b.original_name}"'
+    response.headers["Cache-Control"] = "no-store"
     return response
 
 
-# Keep /static/books/<filename> admin-only (or remove to avoid confusion).
-@app.route('/static/books/<path:filename>')
-@login_required
-def serve_book(filename):
-    # allow only admin to access this direct static route
-    if current_user.role != 'admin':
-        # If teacher tries to use this direct URL, log and redirect to stream view instead
-        notify_admin(f"Teacher '{current_user.name}' attempted direct static access to {filename}")
-        flash("Direct file access is not allowed. The book will open in the reader.")
-        # try to find the book id for friendly redirect (best-effort)
-        b = Book.query.filter_by(filename=filename).first()
-        if b:
-            return redirect(url_for('stream_book', book_id=b.id))
-        return redirect(url_for('teacher_dashboard'))
-    # Admin can directly download/view the file
-    return send_from_directory(app.config['BOOKS_FOLDER'], filename, as_attachment=False)
 
 # ----------------------------
 # Notification for download/print/screenshot attempts (AJAX POST)
@@ -439,33 +420,30 @@ def delete_book(book_id):
 @app.route('/teacher/books')
 @login_required
 def teacher_books():
-    # Check teacher access: not admin
-    if current_user.is_admin:
+    if current_user.role != 'teacher':
         flash('Access denied')
         return redirect(url_for('login'))
 
-    # Get all books uploaded by this teacher
     books = Book.query.filter_by(uploader_id=current_user.id).order_by(Book.id.desc()).all()
 
-    # Define tabs / levels
-    level_tabs = ['0','1','2','3','4','5','6','7','Red','Yellow','Green','Blue','Grammar 1','Grammar 2','Grammar 3','Grammar 4','Grammar 5']
+    level_tabs = ['0','1','2','3','4','5','6','7','Red','Yellow','Green','Blue']
+
     books_by_level = {lvl: [] for lvl in level_tabs}
 
     for b in books:
         if b.levels:
             b_levels = [l.strip().capitalize() for l in b.levels.split(',')]
             for lvl in b_levels:
-                # Normalize numeric levels like "Level 1" -> "1"
-                if lvl.lower().startswith('level '):
-                    lvl = lvl.split(' ')[1]
-                # Grammar levels: "Grammar 1" etc.
-                if lvl.lower().startswith('grammar '):
-                    lvl = 'Grammar ' + lvl.split(' ')[1]
-                # Only add if in tabs
+                if lvl.startswith("Level "):
+                    lvl = lvl.split(" ")[1]
+                if lvl.startswith("Grammar "):
+                    lvl = "Grammar " + lvl.split(' ')[1]
                 if lvl in books_by_level:
                     books_by_level[lvl].append(b)
 
-    return render_template('teacher_books.html', books_by_level=books_by_level, level_tabs=level_tabs)
+    return render_template('teacher_books.html',
+                           books_by_level=books_by_level,
+                           level_tabs=level_tabs)
 
 
 # ----------------------------
@@ -474,6 +452,9 @@ def teacher_books():
 @app.errorhandler(403)
 def forbidden(e):
     return "Forbidden", 403
+
+with app.app_context():
+    db.create_all()
 
 # ----------------------------
 # Run
