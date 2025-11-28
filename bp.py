@@ -302,7 +302,7 @@ def upload_book():
     stored = f"{base}_{timestamp}{ext}"
     f.save(os.path.join(app.config['BOOKS_FOLDER'], stored))
 
-    b = Book(
+   b = Book(
     filename=stored,
     original_name=f.filename,
     levels=levels_str,
@@ -310,10 +310,10 @@ def upload_book():
     category=category,
     uploader_id=current_user.id
 )
-ry=category
-    )
-    db.session.add(b)
-    db.session.commit()
+
+db.session.add(b)
+db.session.commit()
+
 
     flash('Uploaded successfully')
     return redirect(url_for('admin_dashboard'))
