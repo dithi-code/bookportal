@@ -276,17 +276,18 @@ def upload_book():
         flash('Access denied')
         return redirect(url_for('login'))
 
-    # get file
-    f = request.files.get('file')  # matches 'file' in HTML
+    # Get file
+    f = request.files.get('file')
     if not f or f.filename == '':
         flash('No file chosen')
         return redirect(request.url)
+
     if not allowed_file(f.filename):
         flash('File type not allowed')
         return redirect(request.url)
 
     # Levels (multiple checkboxes)
-    levels = request.form.getlist('levels')  # returns list of selected levels
+    levels = request.form.getlist('levels')
     levels_str = ",".join(levels) if levels else "1"
 
     # Colors (multiple checkboxes)
@@ -296,29 +297,31 @@ def upload_book():
     # Category
     category = request.form.get('category', 'Story')
 
-safe = secure_filename(f.filename)
-base, ext = os.path.splitext(safe)
-timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
-stored = f"{base}_{timestamp}{ext}"
+    # ----------------------------
+    # MUST BE INDENTED INSIDE ROUTE
+    # ----------------------------
 
-# Save file
-f.save(os.path.join(app.config['BOOKS_FOLDER'], stored))
+    safe = secure_filename(f.filename)
+    base, ext = os.path.splitext(safe)
+    timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
+    stored = f"{base}_{timestamp}{ext}"
 
-# Create book entry
-b = Book(
-    filename=stored,
-    original_name=f.filename,
-    levels=levels_str,
-    colors=colors_str,
-    category=category,
-    uploader_id=current_user.id
-)
+    # Save file
+    f.save(os.path.join(app.config['BOOKS_FOLDER'], stored))
 
-# Save to DB
-db.session.add(b)
-db.session.commit()
+    # Create book entry
+    b = Book(
+        filename=stored,
+        original_name=f.filename,
+        levels=levels_str,
+        colors=colors_str,
+        category=category,
+        uploader_id=current_user.id
+    )
 
-
+    # Save to DB
+    db.session.add(b)
+    db.session.commit()
 
     flash('Uploaded successfully')
     return redirect(url_for('admin_dashboard'))
