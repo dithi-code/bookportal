@@ -262,28 +262,38 @@ def admin_clear_notifications():
 @login_required
 def upload_book():
     if current_user.role != 'admin':
-        return redirect(url_for('login'))
+        flash("Unauthorized"); return redirect(url_for("admin_dashboard"))
 
     f = request.files.get('file')
-    if not f or not allowed_file(f.filename):
-        flash("No file or invalid type")
-        return redirect(request.url)
+    if not f or f.filename == '':
+        flash("No file selected"); return redirect(url_for("admin_dashboard"))
+    
+    if not f.filename.lower().endswith('.pdf'):
+        flash("Only PDF files allowed"); return redirect(url_for("admin_dashboard"))
 
-    # Save metadata
-    b = Book(
-        title=os.path.splitext(f.filename)[0],
+    title = request.form.get('title') or f.filename
+    levels = request.form.getlist('levels')
+    levels_str = ','.join(levels) if levels else ''
+    category = request.form.get('category') or 'Story'
+
+    # Read file bytes
+    file_bytes = f.read()
+
+    book = Book(
+        title=title,
         original_name=f.filename,
-        filename=f.filename,  # can keep original for display
+        filename=f.filename,   # optional, for reference
+        levels=levels_str,
+        category=category,
         uploader_id=current_user.id,
-        file_size=len(f.read()),  # temporary read to get size
-        content_type=f.content_type or 'application/pdf'
+        file_data=file_bytes,
+        file_size=len(file_bytes),
+        content_type=f.content_type
     )
-    f.seek(0)  # reset read pointer
-    b.file_data = f.read()  # store file in DB
-
-    db.session.add(b)
+    db.session.add(book)
     db.session.commit()
-    flash("Uploaded successfully")
+
+    flash("Book uploaded successfully")
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/books')
@@ -299,22 +309,26 @@ def list_books():
 @login_required
 def view_book(book_id):
     book = Book.query.get_or_404(book_id)
-    is_pdf = book.filename.lower().endswith(".pdf")
-    return render_template('view_book.html', book=book, is_pdf=is_pdf)
+    return render_template('view_book.html', book=book)
 
+import io
+from flask import send_file, abort
 
 @app.route('/books/stream/<int:book_id>')
 @login_required
 def stream_book(book_id):
-    b = Book.query.get_or_404(book_id)
-    if not b.file_data:
+    book = Book.query.get_or_404(book_id)
+
+    if not book.file_data:
         abort(404)
+
     return send_file(
-        io.BytesIO(b.file_data),
+        io.BytesIO(book.file_data),
         as_attachment=False,
-        download_name=b.original_name,
-        mimetype=b.content_type or 'application/pdf'
+        download_name=book.original_name,
+        mimetype=book.content_type or 'application/pdf'
     )
+
 
 
 @app.route('/notify_attempt', methods=['POST'])
