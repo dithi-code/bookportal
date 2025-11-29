@@ -1,9 +1,9 @@
-# bp.py — Final full app
+# bp.py — Final full app (Railway-friendly)
 import os
 from datetime import datetime
 from flask import (
     Flask, render_template, request, redirect, url_for, flash,
-    send_from_directory, jsonify
+    send_from_directory, jsonify, send_file, abort, make_response
 )
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -16,16 +16,16 @@ from werkzeug.utils import secure_filename
 # App config
 # ----------------------------
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'replace-with-a-secure-key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///book_portal.db'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'replace-with-a-secure-key')
+# SQLite DB file inside app directory by default — works on Railway (ephemeral) and locally.
+db_path = os.environ.get('DATABASE_URL') or f"sqlite:///{os.path.join(app.root_path, 'book_portal.db')}"
+app.config['SQLALCHEMY_DATABASE_URI'] = db_path
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-PORT = int(os.environ.get("PORT", 8080))
 
-
-STORAGE_FOLDER = "/opt/render/project/src/storage/books"
+# Storage folder configurable via env; fallback to local storage directory.
+STORAGE_FOLDER = os.environ.get('BOOKS_FOLDER') or os.path.join(app.root_path, 'storage', 'books')
 os.makedirs(STORAGE_FOLDER, exist_ok=True)
 app.config["BOOKS_FOLDER"] = STORAGE_FOLDER
-
 
 ALLOWED_EXT = {'pdf', 'jpg', 'jpeg', 'png'}
 
@@ -63,7 +63,6 @@ class Book(db.Model):
     uploader_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
 
 
-
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String(1000))
@@ -75,27 +74,34 @@ class Notification(db.Model):
 # ----------------------------
 @login_manager.user_loader
 def load_user(uid):
-    return User.query.get(int(uid))
+    try:
+        return User.query.get(int(uid))
+    except Exception:
+        return None
 
 # ----------------------------
-# Create DB + admin once (compatible with Flask 3)
+# Ensure DB + admin exist at startup (idempotent)
 # ----------------------------
-admin_created = False
-
-@app.before_request
-def ensure_db_and_admin():
-    global admin_created
-    if admin_created:
-        return
+def create_db_and_admin():
+    # create tables (no-op if already present)
     db.create_all()
-    # create admin if not exists
+
+    # ensure at least one admin user exists
     admin = User.query.filter_by(role='admin').first()
     if not admin:
-        admin = User(name='admin', email=None, role='admin', is_approved=True, allow_login=True)
-        admin.set_password('admin')
-        db.session.add(admin)
-        db.session.commit()
-    admin_created = True
+        try:
+            admin = User(name='admin', email=None, role='admin', is_approved=True, allow_login=True)
+            admin.set_password(os.environ.get('ADMIN_PASSWORD', 'admin'))  # allow override via env
+            db.session.add(admin)
+            db.session.commit()
+            app.logger.info("Created default admin user")
+        except Exception:
+            # Concurrent deployments might both try to create admin — ignore race errors
+            db.session.rollback()
+
+# call once now (safe because called in app context)
+with app.app_context():
+    create_db_and_admin()
 
 # ----------------------------
 # Helpers
@@ -107,9 +113,13 @@ def allowed_file(filename):
     return ext in ALLOWED_EXT
 
 def notify_admin(message):
-    note = Notification(message=message)
-    db.session.add(note)
-    db.session.commit()
+    try:
+        note = Notification(message=message)
+        db.session.add(note)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        app.logger.exception("Failed to create notification")
 
 # ----------------------------
 # Routes — Auth & Basic
@@ -212,7 +222,7 @@ def admin_dashboard():
             Book.original_name.ilike(f"%{search_query}%")
         )
     books = books_query.all()
-    
+
     teachers = User.query.filter(User.role == 'teacher').all()
     notes = Notification.query.order_by(Notification.created_at.desc()).all()
     return render_template('admin_dashboard.html', teachers=teachers, books=books, notifications=notes, search_query=search_query)
@@ -298,17 +308,15 @@ def upload_book():
     # Category
     category = request.form.get('category', 'Story')
 
-    # ----------------------------
-    # MUST BE INDENTED INSIDE ROUTE
-    # ----------------------------
-
+    # Save using a secure unique filename
     safe = secure_filename(f.filename)
     base, ext = os.path.splitext(safe)
     timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
     stored = f"{base}_{timestamp}{ext}"
 
     # Save file
-    f.save(os.path.join(app.config['BOOKS_FOLDER'], stored))
+    target_path = os.path.join(app.config['BOOKS_FOLDER'], stored)
+    f.save(target_path)
 
     # Create book entry
     b = Book(
@@ -348,8 +356,6 @@ def view_book(book_id):
     is_pdf = (ext == 'pdf')
     return render_template('view_book.html', book=book, is_pdf=is_pdf)
 
-from flask import send_file, abort, make_response
-
 # Serve book to teacher/admin for inline viewing (stream)
 @app.route('/books/stream/<int:book_id>')
 @login_required
@@ -365,8 +371,6 @@ def stream_book(book_id):
     response.headers["Cache-Control"] = "no-store"
     return response
 
-
-
 # ----------------------------
 # Notification for download/print/screenshot attempts (AJAX POST)
 # ----------------------------
@@ -374,9 +378,18 @@ def stream_book(book_id):
 @login_required
 def notify_attempt():
     # expects JSON or form with fields: type, book_title (optional)
-    typ = request.form.get('type') or request.json.get('type') if request.json else None
-    book = request.form.get('book') or (request.json.get('book') if request.json else None)
-    user = current_user.name
+    typ = None
+    book = None
+
+    # prefer JSON if provided
+    try:
+        data = request.get_json(silent=True) or {}
+    except Exception:
+        data = {}
+
+    typ = request.form.get('type') or data.get('type')
+    book = request.form.get('book') or data.get('book')
+    user = current_user.name if current_user else 'anonymous'
     if typ:
         msg = f"{user} attempted {typ}"
         if book:
@@ -384,7 +397,6 @@ def notify_attempt():
         notify_admin(msg)
         return jsonify({'status': 'ok'}), 200
     return jsonify({'status': 'bad request'}), 400
-
 
 # ----------------------------
 # Forgot password (placeholder)
@@ -394,10 +406,9 @@ def forgot_password():
     if request.method == 'POST':
         identifier = request.form.get('user_identifier', '').strip()
         # Here you can implement your reset logic (send email etc.)
-        flash(f'If an account exists for "{identifier}", instructions have been sent.')
+        flash(f'If an account exists for \"{identifier}\", instructions have been sent.')
         return redirect(url_for('login'))
     return render_template('forgot_password.html')
-
 
 # ----------------------------
 # Teacher dashboard
@@ -419,8 +430,8 @@ def delete_book(book_id):
     b = Book.query.get_or_404(book_id)
     try:
         os.remove(os.path.join(app.config['BOOKS_FOLDER'], b.filename))
-    except:
-        pass
+    except Exception:
+        app.logger.warning("Could not remove file from storage")
     db.session.delete(b)
     db.session.commit()
     flash('Book deleted')
@@ -454,7 +465,6 @@ def teacher_books():
                            books_by_level=books_by_level,
                            level_tabs=level_tabs)
 
-
 # ----------------------------
 # Misc
 # ----------------------------
@@ -462,11 +472,11 @@ def teacher_books():
 def forbidden(e):
     return "Forbidden", 403
 
-with app.app_context():
-    db.create_all()
-
 # ----------------------------
-# Run
+# Run (for local dev). On Railway you usually use gunicorn; this still allows `python bp.py` locally.
 # ----------------------------
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Use PORT env var (Railway sets PORT). Default to 8080.
+    port = int(os.environ.get('PORT', 8080))
+    # host 0.0.0.0 so Railway can bind
+    app.run(host='0.0.0.0', port=port, debug=(os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'))
