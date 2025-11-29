@@ -303,8 +303,9 @@ def list_books():
 @login_required
 def view_book(book_id):
     book = Book.query.get_or_404(book_id)
-    is_pdf = book.filename.lower().endswith('pdf')
+    is_pdf = book.filename.lower().endswith(".pdf")
     return render_template('view_book.html', book=book, is_pdf=is_pdf)
+
 
 @app.route('/books/stream/<int:book_id>')
 @login_required
