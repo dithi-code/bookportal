@@ -356,6 +356,14 @@ def delete_book(book_id):
         flash("Error deleting book")
     return redirect(url_for("admin_dashboard"))
 
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        identifier = request.form.get('user_identifier', '').strip()
+        # Here you can implement your reset logic (send email etc.)
+        flash(f'If an account exists for "{identifier}", instructions have been sent.')
+        return redirect(url_for('login'))
+    return render_template('forgot_password.html')
 # ----------------------------
 # Run
 # ----------------------------
