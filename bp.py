@@ -261,35 +261,26 @@ def admin_clear_notifications():
 @app.route('/admin/upload', methods=['POST'])
 @login_required
 def upload_book():
-    if current_user.role != 'admin': return redirect(url_for('login'))
-    f = request.files.get('file')
-    if not f or f.filename=='': flash('No file'); return redirect(request.url)
-    if not allowed_file(f.filename): flash('File type not allowed'); return redirect(request.url)
+    if current_user.role != 'admin':
+        return redirect(url_for('login'))
 
-    levels = request.form.getlist('levels')
-    levels_str = ','.join(levels) if levels else '1'
-    colors = request.form.getlist('colors')
-    colors_str = ','.join(colors) if colors else ''
-    category = request.form.get('category','Story')
-    safe = secure_filename(f.filename)
-    base, ext = os.path.splitext(safe)
-    timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
-    stored = f"{base}_{timestamp}{ext}"
-    path = os.path.join(app.config['BOOKS_FOLDER'], stored)
-    f.save(path)
+    f = request.files.get('file')
+    if not f or not allowed_file(f.filename):
+        flash("No file or invalid type")
+        return redirect(request.url)
+
+    # Save metadata
     b = Book(
         title=os.path.splitext(f.filename)[0],
-        filename=stored,
         original_name=f.filename,
-        levels=levels_str,
-        colors=colors_str,
-        category=category,
+        filename=f.filename,  # can keep original for display
         uploader_id=current_user.id,
-        file_size=os.path.getsize(path),
-        content_type=f.content_type
+        file_size=len(f.read()),  # temporary read to get size
+        content_type=f.content_type or 'application/pdf'
     )
-    with open(path,'rb') as file_bin:
-        b.file_data = file_bin.read()
+    f.seek(0)  # reset read pointer
+    b.file_data = f.read()  # store file in DB
+
     db.session.add(b)
     db.session.commit()
     flash("Uploaded successfully")
@@ -316,9 +307,15 @@ def view_book(book_id):
 @login_required
 def stream_book(book_id):
     b = Book.query.get_or_404(book_id)
-    path = os.path.join(app.config['BOOKS_FOLDER'], b.filename)
-    if not os.path.exists(path): abort(404)
-    return send_file(path, as_attachment=False, download_name=b.original_name, mimetype=b.content_type or 'application/pdf')
+    if not b.file_data:
+        abort(404)
+    return send_file(
+        io.BytesIO(b.file_data),
+        as_attachment=False,
+        download_name=b.original_name,
+        mimetype=b.content_type or 'application/pdf'
+    )
+
 
 @app.route('/notify_attempt', methods=['POST'])
 @login_required
