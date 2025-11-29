@@ -16,26 +16,29 @@ from werkzeug.utils import secure_filename
 # ----------------------------
 app = Flask(__name__)
 
-# Secret key
+# Secret Key
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'devsecret')
 
-# --- Database configuration ---
+# --- Database Config ---
 db_url = os.environ.get('DATABASE_URL')
 
 if db_url:
-    # Use Railway Postgres
-    app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+    # Railway PostgreSQL
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace("postgres://", "postgresql://")
 else:
-    # Fallback to SQLite for local development
+    # Local fallback (SQLite)
     sqlite_path = f"sqlite:///{os.path.join(app.root_path, 'book_portal.db')}"
     app.config['SQLALCHEMY_DATABASE_URI'] = sqlite_path
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# --- File storage ---
+# --- Storage Folder ---
 STORAGE_FOLDER = os.environ.get('BOOKS_FOLDER') or os.path.join(app.root_path, 'books_storage')
 os.makedirs(STORAGE_FOLDER, exist_ok=True)
 app.config['BOOKS_FOLDER'] = STORAGE_FOLDER
+
+db = SQLAlchemy(app)
+
 
 # Allowed extensions
 ALLOWED_EXT = {'pdf', 'jpg', 'jpeg', 'png'}
@@ -364,6 +367,11 @@ def forgot_password():
         flash(f'If an account exists for "{identifier}", instructions have been sent.')
         return redirect(url_for('login'))
     return render_template('forgot_password.html')
+
+
+with app.app_context():
+    db.create_all()
+
 # ----------------------------
 # Run
 # ----------------------------
