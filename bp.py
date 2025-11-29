@@ -16,16 +16,27 @@ from werkzeug.utils import secure_filename
 # App config
 # ----------------------------
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'secret123')
-# SQLite DB file inside app directory by default — works on Railway (ephemeral) and locally.
-db_path = os.environ.get('DATABASE_URL') or f"sqlite:///{os.path.join(app.root_path, 'book_portal.db')}"
-app.config['SQLALCHEMY_DATABASE_URI'] = db_path
+import os
+
+# Flask secret key
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+if not app.config['SECRET_KEY']:
+    raise RuntimeError("SECRET_KEY env variable not set!")
+
+# Database: Railway Postgres preferred
+db_url = os.environ.get('DATABASE_URL')
+if not db_url:
+    raise RuntimeError("DATABASE_URL env variable not set!")
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Storage folder configurable via env; fallback to local storage directory.
-STORAGE_FOLDER = os.environ.get('BOOKS_FOLDER') or os.path.join(app.root_path, 'storage', 'books')
+# Persistent storage folder for books
+STORAGE_FOLDER = os.environ.get('BOOKS_FOLDER')
+if not STORAGE_FOLDER:
+    raise RuntimeError("BOOKS_FOLDER env variable not set!")
 os.makedirs(STORAGE_FOLDER, exist_ok=True)
-app.config["BOOKS_FOLDER"] = STORAGE_FOLDER
+app.config['BOOKS_FOLDER'] = STORAGE_FOLDER
+
 
 ALLOWED_EXT = {'pdf', 'jpg', 'jpeg', 'png'}
 
