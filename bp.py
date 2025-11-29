@@ -16,20 +16,31 @@ from werkzeug.utils import secure_filename
 # ----------------------------
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'devsecret'
+# Secret key
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'devsecret')
 
+# --- Database configuration ---
 db_url = os.environ.get('DATABASE_URL')
-if not db_url:
-    raise RuntimeError("DATABASE_URL env variable not set!")
-app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+
+if db_url:
+    # Use Railway Postgres
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+else:
+    # Fallback to SQLite for local development
+    sqlite_path = f"sqlite:///{os.path.join(app.root_path, 'book_portal.db')}"
+    app.config['SQLALCHEMY_DATABASE_URI'] = sqlite_path
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-STORAGE_FOLDER = os.environ.get('BOOKS_FOLDER', 'books_storage')
+# --- File storage ---
+STORAGE_FOLDER = os.environ.get('BOOKS_FOLDER') or os.path.join(app.root_path, 'books_storage')
 os.makedirs(STORAGE_FOLDER, exist_ok=True)
 app.config['BOOKS_FOLDER'] = STORAGE_FOLDER
 
+# Allowed extensions
 ALLOWED_EXT = {'pdf', 'jpg', 'jpeg', 'png'}
 
+# Init extensions
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
