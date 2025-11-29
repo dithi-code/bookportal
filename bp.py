@@ -39,13 +39,12 @@ app.config['BOOKS_FOLDER'] = STORAGE_FOLDER
 
 db = SQLAlchemy(app)
 
-
 # Allowed extensions
 ALLOWED_EXT = {'pdf', 'jpg', 'jpeg', 'png'}
 
 # Init extensions
-db = SQLAlchemy(app)
 login_manager = LoginManager(app)
+
 login_manager.login_view = 'login'
 
 # ----------------------------
