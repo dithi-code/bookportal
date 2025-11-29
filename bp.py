@@ -20,17 +20,21 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'devsecret')
 
 # --- Database Config ---
-db_url = os.environ.get('DATABASE_URL')
+# --- Database Config ---
+db_url = os.environ.get("DATABASE_URL")
 
 if db_url:
-    # Railway PostgreSQL
-    app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace("postgres://", "postgresql://")
-else:
-    # Local fallback (SQLite)
-    sqlite_path = f"sqlite:///{os.path.join(app.root_path, 'book_portal.db')}"
-    app.config['SQLALCHEMY_DATABASE_URI'] = sqlite_path
+    # Railway public PostgreSQL URL fix
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://")
 
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config["SQLALCHEMY_DATABASE_URI"] = db_url
+else:
+    # Local SQLite fallback
+    sqlite_path = f"sqlite:///{os.path.join(app.root_path, 'book_portal.db')}"
+    app.config["SQLALCHEMY_DATABASE_URI"] = sqlite_path
+
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # --- Storage Folder ---
 STORAGE_FOLDER = os.environ.get('BOOKS_FOLDER') or os.path.join(app.root_path, 'books_storage')
