@@ -16,7 +16,7 @@ from werkzeug.utils import secure_filename
 # App config
 # ----------------------------
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'replace-with-a-secure-key')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'secret123')
 # SQLite DB file inside app directory by default — works on Railway (ephemeral) and locally.
 db_path = os.environ.get('DATABASE_URL') or f"sqlite:///{os.path.join(app.root_path, 'book_portal.db')}"
 app.config['SQLALCHEMY_DATABASE_URI'] = db_path
