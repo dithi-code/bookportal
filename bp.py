@@ -361,15 +361,20 @@ def view_book(book_id):
 @login_required
 def stream_book(book_id):
     b = Book.query.get_or_404(book_id)
+
+    # Build full path in persistent folder
     path = os.path.join(app.config['BOOKS_FOLDER'], b.filename)
 
     if not os.path.exists(path):
-        return abort(404)
+        abort(404, description="File not found. It may have been deleted.")
 
-    response = make_response(send_file(path))
-    response.headers["Content-Disposition"] = f'inline; filename="{b.original_name}"'
-    response.headers["Cache-Control"] = "no-store"
-    return response
+    return send_file(
+        path,
+        as_attachment=False,
+        download_name=b.original_name,
+        mimetype='application/pdf'
+    )
+
 
 # ----------------------------
 # Notification for download/print/screenshot attempts (AJAX POST)
