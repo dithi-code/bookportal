@@ -15,7 +15,6 @@
     overflow: hidden;
   }
 
-  /* Scrollable container */
   #viewerContainer {
     position: fixed;
     inset: 0;
@@ -31,7 +30,6 @@
     background: #111;
   }
 
-  /* Disable selection & drag */
   body, canvas {
     user-select: none;
     -webkit-user-select: none;
@@ -45,52 +43,70 @@
 <div id="viewerContainer"></div>
 
 <script>
-/* ---------- helper: sendAttempt ---------- */
+
+/* ---------- Helper: Notify attempts ---------- */
 function sendAttempt(type) {
   fetch("/notify_attempt", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: "type=" + encodeURIComponent(type) +
-          "&book=" + encodeURIComponent("{{ book.original_name }}")
+    body:
+      "type=" + encodeURIComponent(type) +
+      "&book=" + encodeURIComponent("{{ book.original_name }}")
   });
 }
 
-/* ---------- block shortcuts / right click ---------- */
+/* ---------- Disable inspection ---------- */
 (function blockEvents() {
-  window.addEventListener("keydown", function(e) {
-    const blocked = (
-      e.key === "F12" ||
-      (e.ctrlKey && e.shiftKey && ["I","J","C"].includes(e.key)) ||
-      (e.ctrlKey && ["P","S","U","O","A","C"].includes(e.key))
-    );
-    if (blocked) {
+  window.addEventListener(
+    "keydown",
+    function (e) {
+      const blocked =
+        e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key)) ||
+        (e.ctrlKey && ["P", "S", "U", "O", "A", "C"].includes(e.key));
+
+      if (blocked) {
+        e.preventDefault();
+        sendAttempt("Blocked Shortcut: " + e.key);
+        return false;
+      }
+    },
+    true
+  );
+
+  window.addEventListener(
+    "contextmenu",
+    function (e) {
       e.preventDefault();
-      e.stopPropagation();
-      sendAttempt("Blocked Shortcut: " + e.key);
+      sendAttempt("Right Click Attempt");
       return false;
-    }
-  }, true);
+    },
+    true
+  );
 
-  window.addEventListener("contextmenu", function(e){
-    e.preventDefault();
-    sendAttempt("Right Click Attempt");
-    return false;
-  }, true);
+  window.addEventListener(
+    "dragstart",
+    function (e) {
+      e.preventDefault();
+      sendAttempt("Drag Attempt");
+      return false;
+    },
+    true
+  );
 
-  window.addEventListener("dragstart", function(e){
-    e.preventDefault();
-    sendAttempt("Drag Attempt");
-    return false;
-  }, true);
-
-  document.addEventListener("selectstart", function(e){
-    e.preventDefault();
-    return false;
-  }, true);
+  document.addEventListener(
+    "selectstart",
+    function (e) {
+      e.preventDefault();
+      return false;
+    },
+    true
+  );
 })();
 
-/* ---------- PDF.js multi-page rendering ---------- */
+/* ---------- PDF Rendering ---------- */
 const url = "{{ url_for('stream_book', book_id=book.id) }}";
+
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.worker.min.js";
 
