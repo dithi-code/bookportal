@@ -105,7 +105,7 @@ function sendAttempt(type) {
 })();
 
 /* ---------- PDF Rendering ---------- */
-const url = "{{ url_for('stream_book', book_id=book.id) }}";
+const url = "{{ url_for('view_book', book_id=book.id) }}";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.worker.min.js";
