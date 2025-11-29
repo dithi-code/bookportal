@@ -197,16 +197,21 @@ def logout():
 @app.route('/admin')
 @login_required
 def admin_dashboard():
-    if current_user.role != 'admin':
-        flash('Access denied'); return redirect(url_for('login'))
-    search = request.args.get('search','').strip()
-    books_query = Book.query.order_by(Book.uploaded_at.desc())
-    if search:
-        books_query = books_query.filter(Book.original_name.ilike(f"%{search}%"))
-    books = books_query.all()
-    teachers = User.query.filter_by(role='teacher').all()
-    notes = Notification.query.order_by(Notification.created_at.desc()).all()
-    return render_template('admin_dashboard.html', teachers=teachers, books=books, notifications=notes, search_query=search)
+    try:
+        if current_user.role != 'admin':
+            flash('Access denied'); 
+            return redirect(url_for('login'))
+        search = request.args.get('search','').strip()
+        books_query = Book.query.order_by(Book.uploaded_at.desc())
+        if search:
+            books_query = books_query.filter(Book.original_name.ilike(f"%{search}%"))
+        books = books_query.all()
+        teachers = User.query.filter_by(role='teacher').all()
+        notes = Notification.query.order_by(Notification.created_at.desc()).all()
+        return render_template('admin_dashboard.html', teachers=teachers, books=books, notifications=notes, search_query=search)
+    except Exception as e:
+        app.logger.exception("Error in admin_dashboard")
+        return f"Server Error: {str(e)}", 500
 
 @app.route('/admin/approve/<int:user_id>', methods=['POST'])
 @login_required
