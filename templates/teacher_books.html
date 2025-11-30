@@ -2,12 +2,35 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Books</title>
+  <title>Your Books</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { font-family: Poppins, sans-serif; background: #eef3ff; padding: 20px; }
-    .book-card { padding:10px; margin:5px; background:#fff; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1);}
-    .category-title { margin-top:15px; font-weight:bold; font-size:1.1em; color:#333; }
+    body {
+      font-family: Poppins, sans-serif;
+      background: #eef3ff;
+      padding: 20px;
+    }
+    .book-card {
+      padding: 10px 12px;
+      margin: 6px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+      min-width: 180px;
+    }
+    .category-title {
+      margin-top: 18px;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 1rem;
+      color: #333;
+    }
+    .no-books {
+      font-size: 0.9rem;
+      color: #888;
+      margin-left: 4px;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
@@ -15,44 +38,58 @@
 <div class="container">
   <h2 class="mb-4">Your Uploaded Books</h2>
 
-  <!-- LEVEL TABS -->
+  <!-- LEVEL TABS (1,2,3,4,5,6,7,Red,Yellow,Green,Blue) -->
   <ul class="nav nav-tabs" id="levelTabs" role="tablist">
     {% for lvl in level_tabs %}
-    <li class="nav-item" role="presentation">
-      <button class="nav-link {% if loop.first %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#level{{lvl | replace(' ','_')}}" type="button" role="tab">
-        {{ lvl }}
-      </button>
-    </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link {% if loop.first %}active{% endif %}"
+                id="tab-{{ lvl | lower }}"
+                data-bs-toggle="tab"
+                data-bs-target="#level-{{ lvl | replace(' ','_') | lower }}"
+                type="button"
+                role="tab">
+          {{ lvl }}
+        </button>
+      </li>
     {% endfor %}
   </ul>
 
+  <!-- TAB CONTENT -->
   <div class="tab-content mt-3">
+    {% set categories = ['Story','Words','Workout','Comprehension','Test'] %}
+
     {% for lvl in level_tabs %}
-    <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="level{{lvl | replace(' ','_')}}" role="tabpanel">
+      <div class="tab-pane fade {% if loop.first %}show active{% endif %}"
+           id="level-{{ lvl | replace(' ','_') | lower }}"
+           role="tabpanel">
 
-      {% for cat in ['Story','Words','Comprehension','Workout','Test'] %}
-      <div class="category-title">{{ cat }}</div>
-      <div class="d-flex flex-wrap">
+        {% for cat in categories %}
+          <div class="category-title">{{ cat }}</div>
+          <div class="d-flex flex-wrap">
 
-        {% set has_books = false %}
-        {% for b in books_by_level[lvl] %}
-          {% if b.category and b.category.lower() == cat.lower() %}
-            {% set has_books = true %}
-            <div class="book-card">
-              <strong>{{ b.title }}</strong><br>
-              <a href="{{ url_for('serve_book_file', book_id=b.id) }}" class="btn btn-sm btn-info mt-1">View</a>
-            </div>
-          {% endif %}
+            {% set has_books = false %}
+            {% for b in books_by_level[lvl] %}
+              {% if (b.category or '')|lower == cat|lower %}
+                {% set has_books = true %}
+                <div class="book-card">
+                  <strong>{{ b.title or b.original_name }}</strong><br>
+                  <small>Level(s): {{ b.levels }}</small><br>
+                  <a href="{{ url_for('view_book', book_id=b.id) }}"
+                     class="btn btn-sm btn-primary mt-2">
+                    View
+                  </a>
+                </div>
+              {% endif %}
+            {% endfor %}
+
+            {% if not has_books %}
+              <div class="no-books">No books in this category.</div>
+            {% endif %}
+
+          </div>
         {% endfor %}
 
-        {% if not has_books %}
-          <div class="text-muted ms-2">No books in this category.</div>
-        {% endif %}
-
       </div>
-      {% endfor %}
-
-    </div>
     {% endfor %}
   </div>
 
