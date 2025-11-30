@@ -1,51 +1,135 @@
-{% extends "base.html" %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Books</title>
 
-<h3 class="mb-4 text-center">Uploaded Books</h3>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<div class="card p-4">
-    <!-- LEVEL TABS -->
-    <ul class="nav nav-tabs mb-3" id="levelTabs" role="tablist">
-        {% for lvl in level_tabs %}
-        <li class="nav-item" role="presentation">
-            <button class="nav-link {% if loop.first %}active{% endif %}"
-                    id="tab-{{ lvl | lower }}"
-                    data-bs-toggle="tab"
-                    data-bs-target="#level-{{ lvl | replace(' ','_') | lower }}"
-                    type="button"
-                    role="tab">
-                {{ lvl }}
-            </button>
-        </li>
+  <style>
+    body {
+      font-family: Poppins, sans-serif;
+      background: #eef3ff;
+      padding: 20px;
+    }
+
+    .page-title {
+      font-weight: 700;
+      font-size: 28px;
+      text-align: center;
+      margin-bottom: 25px;
+      color: #2c3e50;
+    }
+
+    .book-card {
+      padding: 12px 14px;
+      margin: 6px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+      min-width: 180px;
+    }
+
+    .category-title {
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 1.05rem;
+      color: #333;
+    }
+
+    .no-books {
+      font-size: 0.9rem;
+      color: #777;
+      margin-left: 4px;
+      font-style: italic;
+    }
+
+    /* Make tabs centered and clean */
+    .nav-tabs {
+      justify-content: center;
+      border-bottom: 2px solid #cfd8ff;
+    }
+
+    .nav-tabs .nav-link {
+      font-weight: 500;
+      color: #444;
+    }
+
+    .nav-tabs .nav-link.active {
+      background: #4a6cf7;
+      color: #fff;
+      border-color: #4a6cf7;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- PAGE TITLE -->
+  <div class="page-title">Books</div>
+
+  <!-- LEVEL TABS -->
+  <ul class="nav nav-tabs" id="levelTabs" role="tablist">
+    {% for lvl in level_tabs %}
+      <li class="nav-item" role="presentation">
+        <button class="nav-link {% if loop.first %}active{% endif %}"
+                data-bs-toggle="tab"
+                data-bs-target="#level-{{ lvl | replace(' ','_') | lower }}"
+                type="button"
+                role="tab">
+          {{ lvl }}
+        </button>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <!-- TAB CONTENT -->
+  <div class="tab-content mt-4">
+
+    {% set categories = ['Story','Words','Workout','Comprehension','Test'] %}
+
+    {% for lvl in level_tabs %}
+      <div class="tab-pane fade {% if loop.first %}show active{% endif %}"
+           id="level-{{ lvl | replace(' ','_') | lower }}"
+           role="tabpanel">
+
+        {% for cat in categories %}
+          <div class="category-title">{{ cat }}</div>
+          <div class="d-flex flex-wrap">
+
+            {% set has_books = false %}
+
+            {% for b in books_by_level[lvl] %}
+              {% if (b.category or '')|lower == cat|lower %}
+                {% set has_books = true %}
+                <div class="book-card">
+                  <strong>{{ b.title or b.original_name }}</strong><br>
+                  <small>Level: {{ b.levels }}</small><br>
+                  <a href="{{ url_for('view_book', book_id=b.id) }}"
+                     class="btn btn-sm btn-primary mt-2">
+                    View
+                  </a>
+                </div>
+              {% endif %}
+            {% endfor %}
+
+            {% if not has_books %}
+              <div class="no-books">No books in this category.</div>
+            {% endif %}
+
+          </div>
         {% endfor %}
-    </ul>
 
-    <!-- TAB CONTENT -->
-    <div class="tab-content">
-        {% for lvl in level_tabs %}
-        <div class="tab-pane fade {% if loop.first %}show active{% endif %}"
-             id="level-{{ lvl | replace(' ','_') | lower }}"
-             role="tabpanel">
+      </div>
+    {% endfor %}
 
-            {% for cat in categories %}
-            <h6 class="mt-3 mb-2">{{ cat }}</h6>
-            <div class="d-flex flex-wrap">
-                {% set has_books = false %}
-                {% for b in books_by_level[lvl] %}
-                    {% if (b.category or '')|lower == cat|lower %}
-                        {% set has_books = true %}
-                        <div class="book-card">
-                            <strong>{{ b.title or b.original_name }}</strong><br>
-                            <small>Level(s): {{ b.levels }}</small><br>
-                            <a href="{{ url_for('view_book', book_id=b.id) }}" class="btn btn-sm gradient-btn mt-2">View</a>
-                        </div>
-                    {% endif %}
-                {% endfor %}
-                
+  </div>
 
-        </div>
-        {% endfor %}
-    </div>
 </div>
 
-{% endblock %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
