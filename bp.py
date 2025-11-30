@@ -359,8 +359,33 @@ def notify_attempt():
 @app.route('/teacher')
 @login_required
 def teacher_dashboard():
-    if current_user.role != 'teacher': return redirect(url_for('login'))
-    return render_template('teacher_dashboard.html')
+    if current_user.role != 'teacher':
+        return redirect(url_for('login'))
+
+    # LEVELS + COLOR LEVELS
+    level_tabs = ["1","2","3","4","5","6","7","Red","Yellow","Green","Blue"]
+
+    # Get all books
+    all_books = Book.query.all()
+
+    # Organize books by level/color
+    books_by_level = {lvl: [] for lvl in level_tabs}
+
+    for book in all_books:
+        # book.levels should contain comma-separated values like "1,Red,Green"
+        if book.levels:
+            assigned_levels = [x.strip() for x in book.levels.split(",")]
+            for lvl in assigned_levels:
+                if lvl in books_by_level:
+                    books_by_level[lvl].append(book)
+
+    return render_template(
+        'teacher_dashboard.html',
+        level_tabs=level_tabs,
+        books_by_level=books_by_level,
+        categories=['Story','Words','Workout','Comprehension','Test']
+    )
+
 
 @app.route('/teacher/books')
 @login_required
