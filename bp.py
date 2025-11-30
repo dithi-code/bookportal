@@ -75,7 +75,7 @@ class Book(db.Model):
     original_name = db.Column(db.String(200), nullable=False)
     filename = db.Column(db.String(200), nullable=False)
     category = db.Column(db.String(100))
-    levels = db.Column(db.String(200))   # Example: "1,2,3,Red,Blue"
+    levels = db.Column(db.String(200))   # store: "1,2,3,Red,Blue"
     uploader_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     file_data = db.Column(db.LargeBinary)
     file_size = db.Column(db.Integer)
@@ -83,6 +83,7 @@ class Book(db.Model):
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
     completions = db.relationship("Completion", backref="book",
                                   cascade="all, delete")
+
 
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
