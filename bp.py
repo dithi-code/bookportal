@@ -296,14 +296,25 @@ def upload_book():
     flash("Book uploaded successfully")
     return redirect(url_for('admin_dashboard'))
 
-@app.route('/books')
+@app.route("/books")
 @login_required
-def list_books():
-    search = request.args.get('search','').strip()
-    query = Book.query.order_by(Book.uploaded_at.desc())
-    if search: query = query.filter(Book.original_name.ilike(f"%{search}%"))
-    books = query.all()
-    return render_template('teacher_books.html', books=books, search_query=search)
+def books():
+    level_tabs = ["1","2","3","4","5","6","7","Red","Yellow","Green","Blue"]
+
+    books = Book.query.all()
+    books_by_level = { lvl: [] for lvl in level_tabs }
+
+    for b in books:
+        if b.levels:
+            for lv in b.levels.split(","):
+                lv = lv.strip()
+                if lv in books_by_level:
+                    books_by_level[lv].append(b)
+
+    return render_template("books.html",
+                           level_tabs=level_tabs,
+                           books_by_level=books_by_level)
+
 
 @app.route('/books/<int:book_id>')
 @login_required
