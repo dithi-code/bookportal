@@ -75,14 +75,14 @@ class Book(db.Model):
     original_name = db.Column(db.String(200), nullable=False)
     filename = db.Column(db.String(200), nullable=False)
     category = db.Column(db.String(100))
-    levels = db.Column(db.String(200))
-    colors = db.Column(db.String(200))
+    levels = db.Column(db.String(200))   # Example: "1,2,3,Red,Blue"
     uploader_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    file_data = db.Column(db.LargeBinary)        
+    file_data = db.Column(db.LargeBinary)
     file_size = db.Column(db.Integer)
     content_type = db.Column(db.String(100))
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
-    completions = db.relationship("Completion", backref="book", cascade="all, delete")
+    completions = db.relationship("Completion", backref="book",
+                                  cascade="all, delete")
 
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -92,8 +92,8 @@ class Notification(db.Model):
 
 class Completion(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     book_id = db.Column(db.Integer, db.ForeignKey("book.id"))
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     completed_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 # ----------------------------
@@ -258,43 +258,41 @@ def admin_clear_notifications():
 # ----------------------------
 # Book upload & view
 # ----------------------------
-@app.route('/admin/upload', methods=['POST'])
+@app.route("/admin/upload", methods=["GET", "POST"])
 @login_required
 def upload_book():
-    if current_user.role != 'admin':
-        flash("Unauthorized"); return redirect(url_for("admin_dashboard"))
+    if current_user.role != "admin":
+        return redirect(url_for("login"))
 
-    f = request.files.get('file')
-    if not f or f.filename == '':
-        flash("No file selected"); return redirect(url_for("admin_dashboard"))
-    
-    if not f.filename.lower().endswith('.pdf'):
-        flash("Only PDF files allowed"); return redirect(url_for("admin_dashboard"))
+    if request.method == "POST":
+        file = request.files.get("file")
+        title = request.form.get("title")
+        category = request.form.get("category")
+        levels = request.form.getlist("levels")  # multiple select
 
-    title = request.form.get('title') or f.filename
-    levels = request.form.getlist('levels')
-    levels_str = ','.join(levels) if levels else ''
-    category = request.form.get('category') or 'Story'
+        levels_str = ",".join(levels)
 
-    # Read file bytes
-    file_bytes = f.read()
+        filename = secure_filename(file.filename)
+        file_data = file.read()
+        
+        book = Book(
+            title=title,
+            original_name=file.filename,
+            filename=filename,
+            category=category,
+            levels=levels_str,
+            uploader_id=current_user.id,
+            file_data=file_data,
+            file_size=len(file_data),
+            content_type=file.content_type,
+        )
+        db.session.add(book)
+        db.session.commit()
 
-    book = Book(
-        title=title,
-        original_name=f.filename,
-        filename=f.filename,   # optional, for reference
-        levels=levels_str,
-        category=category,
-        uploader_id=current_user.id,
-        file_data=file_bytes,
-        file_size=len(file_bytes),
-        content_type=f.content_type
-    )
-    db.session.add(book)
-    db.session.commit()
+        flash("Book uploaded successfully!", "success")
+        return redirect(url_for("admin_dashboard"))
 
-    flash("Book uploaded successfully")
-    return redirect(url_for('admin_dashboard'))
+    return render_template("upload_book.html")
 
 @app.route("/books")
 @login_required
