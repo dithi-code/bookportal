@@ -46,7 +46,7 @@
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('upload_book') }}">Upload Book</a></li>
                     {% else %}
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('list_books') }}">My Books</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('teacher_books') }}">Books</a></li>
                     {% endif %}
                     <li class="nav-item"><a class="nav-link text-danger" href="{{ url_for('logout') }}">Logout</a></li>
                 </ul>
