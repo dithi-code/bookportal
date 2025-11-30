@@ -354,15 +354,37 @@ def teacher_dashboard():
 @app.route('/teacher/books')
 @login_required
 def teacher_books():
-    if current_user.role != 'teacher': return redirect(url_for('login'))
-    books = Book.query.filter_by(uploader_id=current_user.id).order_by(Book.uploaded_at.desc()).all()
-    level_tabs = ['0','1','2','3','4','5','6','7','Red','Yellow','Green','Blue']
+    if current_user.role != 'teacher':
+        flash('Access denied')
+        return redirect(url_for('login'))
+
+    books = Book.query.filter_by(uploader_id=current_user.id).order_by(Book.id.desc()).all()
+
+    # 11 tabs
+    level_tabs = ['1','2','3','4','5','6','7','Red','Yellow','Green','Blue']
+
+    # prepare dict
     books_by_level = {lvl: [] for lvl in level_tabs}
+
     for b in books:
         if b.levels:
-            for lvl in [l.strip().capitalize() for l in b.levels.split(',')]:
-                if lvl in books_by_level: books_by_level[lvl].append(b)
-    return render_template('teacher_books.html', books_by_level=books_by_level, level_tabs=level_tabs)
+            b_levels = [l.strip().capitalize() for l in b.levels.split(',')]
+            for lvl in b_levels:
+                # normalize numeric "Level 1" -> "1"
+                if lvl.lower().startswith("level "):
+                    lvl_key = lvl.split(" ", 1)[1]  # after "Level "
+                else:
+                    lvl_key = lvl  # Red/Yellow/Green/Blue as-is
+
+                if lvl_key in books_by_level:
+                    books_by_level[lvl_key].append(b)
+
+    return render_template(
+        'teacher_books.html',
+        books_by_level=books_by_level,
+        level_tabs=level_tabs
+    )
+
 
 @app.route("/delete_book/<int:book_id>", methods=["POST"])
 @login_required
