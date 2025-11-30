@@ -416,7 +416,7 @@ def teacher_books():
                     books_by_level[lvl_key].append(b)
 
     return render_template(
-        'teacher_teacher_books.html',
+        'teacher_books.html',
         books_by_level=books_by_level,
         level_tabs=level_tabs
     )
