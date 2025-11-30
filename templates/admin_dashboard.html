@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #c2e9fb, #a1c4fd);
+      font-family: "Poppins", sans-serif;
+    }
+    .card {
+      border-radius: 15px;
+      border: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .nav-tabs .nav-link.active {
+      background-color: #fff;
+      border-radius: 10px 10px 0 0;
+      font-weight: 600;
+    }
+    .tab-content {
+      margin-top: 20px;
+    }
+    .btn-sm {
+      border-radius: 6px;
+    }
+    .table td, .table th {
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container py-4">
+  <h2 class="text-center mb-4 text-dark">Admin Dashboard</h2>
+
+  <!-- TABS -->
+  <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+    <li class="nav-item">
+      <button class="nav-link active" id="teachers-tab" data-bs-toggle="tab" data-bs-target="#teachers" type="button">Teachers</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" id="books-tab" data-bs-toggle="tab" data-bs-target="#books" type="button">Books</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" id="notifications-tab" data-bs-toggle="tab" data-bs-target="#notifications" type="button">Notifications</button>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+
+    <!-- TEACHERS TAB -->
+    <div class="tab-pane fade show active" id="teachers">
+      <div class="card p-3 mt-3">
+        <h4 class="mb-3">Teacher Details</h4>
+        {% if teachers|length == 0 %}
+          <p>No teachers registered yet.</p>
+        {% else %}
+          <table class="table table-striped table-hover text-center">
+            <thead class="table-dark">
+              <tr>
+                <th>ID</th><th>Name</th><th>Email</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for t in teachers %}
+              <tr>
+                <td>{{ t.id }}</td>
+                <td>{{ t.name }}</td>
+                <td>{{ t.email or '-' }}</td>
+                <td>
+                  {% if t.is_approved %}
+                    <span class="badge bg-success">Approved</span>
+                  {% else %}
+                    <span class="badge bg-warning">Pending</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <form style="display:inline" action="{{ url_for('admin_approve', user_id=t.id) }}" method="post">
+                    <button class="btn btn-success btn-sm" {% if t.is_approved %}disabled{% endif %}>Approve</button>
+                  </form>
+                  <form style="display:inline" action="{{ url_for('admin_toggle_allow', user_id=t.id) }}" method="post">
+                    <button class="btn btn-secondary btn-sm">{% if t.allow_login %}Disable{% else %}Enable{% endif %} Login</button>
+                  </form>
+                  <form style="display:inline" action="{{ url_for('admin_delete', user_id=t.id) }}" method="post">
+                    <button class="btn btn-danger btn-sm" onclick="return confirm('Delete this teacher?')">Delete</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- BOOKS TAB -->
+    <div class="tab-pane fade" id="books">
+      <!-- Upload Form -->
+      <div class="card p-3 mt-3">
+        <h4 class="mb-3">Upload New Book</h4>
+        <form action="{{ url_for('upload_book') }}" method="POST" enctype="multipart/form-data">
+          <div class="row mb-3">
+            <div class="col-md-6 mb-2">
+              <input type="text" name="title" class="form-control" placeholder="Book Title" required>
+            </div>
+            <div class="col-md-6 mb-2">
+              <input type="file" name="file" class="form-control" accept="application/pdf" required>
+            </div>
+          </div>
+
+          <!-- Levels -->
+          <div class="card p-3 mb-3">
+            <h6>Select Levels</h6>
+            <div class="row">
+              {% for i in range(1, 8) %}
+                <div class="col-md-2 mb-2">
+                  <label><input type="checkbox" name="levels" value="{{ i }}"> Level {{ i }}</label>
+                </div>
+              {% endfor %}
+              {% for color in ['Red','Yellow','Green','Blue'] %}
+                <div class="col-md-2 mb-2">
+                  <label><input type="checkbox" name="levels" value="{{ color }}"> {{ color }}</label>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Category -->
+          <div class="card p-3 mb-3">
+            <h6>Select Category</h6>
+            <select name="category" class="form-control" required>
+              <option value="">Choose Category</option>
+              <option value="Story">Story</option>
+              <option value="Words">Words</option>
+              <option value="Workout">Workout</option>
+              <option value="Comprehension">Comprehension</option>
+              <option value="Test">Test</option>
+            </select>
+          </div>
+
+          <button class="btn btn-dark w-100">Upload Book</button>
+        </form>
+      </div>
+
+      <!-- Uploaded Books -->
+<!-- Uploaded Books Table -->
+<div class="card p-3 mt-3">
+  <h4 class="mb-3">Uploaded Books</h4>
+  <table class="table table-striped align-middle">
+    <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>Book Title</th>
+        <th>Levels</th>
+        <th>Category</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in books %}
+      <tr>
+        <td>{{ b.id }}</td>
+        <td>{{ b.original_name }}</td>
+        <td>{{ b.levels }}</td>
+        <td>{{ b.category }}</td>
+        <td class="d-flex gap-2">
+          <!-- View -->
+          <a href="{{ url_for('view_book', book_id=b.id) }}" class="btn btn-primary btn-sm" target="_blank">
+            View
+          </a>
+
+          <!-- Delete -->
+          <form action="{{ url_for('delete_book', book_id=b.id) }}" method="POST" style="display:inline;">
+            <button class="btn btn-danger btn-sm" onclick="return confirm('Delete this book?')">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+    <!-- NOTIFICATIONS TAB -->
+    <div class="tab-pane fade" id="notifications">
+      <div class="card p-3 mt-3">
+        <h4>Notifications</h4>
+        {% if notifications|length == 0 %}
+          <p>No new notifications yet.</p>
+        {% else %}
+          <form method="POST" action="/admin/clear_notifications" class="mb-3">
+            <button type="submit" class="btn btn-danger btn-sm">Clear All</button>
+          </form>
+          <ul class="list-group">
+            {% for n in notifications %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ n.message }}
+                <small class="text-muted">{{ n.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
