@@ -83,7 +83,6 @@ class Book(db.Model):
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
     completions = db.relationship("Completion", backref="book", cascade="all, delete")
 
-
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String(1000))
