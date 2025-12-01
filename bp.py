@@ -422,6 +422,7 @@ def teacher_books():
 @app.route("/delete_book/<int:book_id>", methods=["POST"])
 @login_required
 def delete_book(book_id):
+
     if current_user.role != 'admin':
         flash("Unauthorized")
         return redirect(url_for("admin_dashboard"))
@@ -433,7 +434,7 @@ def delete_book(book_id):
         db.session.delete(b)
         db.session.commit()
         flash("Book deleted successfully")
-    except:
+    except Exception as e:
         db.session.rollback()
         flash("Error deleting book")
 
