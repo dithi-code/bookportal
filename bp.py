@@ -422,8 +422,12 @@ def teacher_books():
 @app.route("/delete_book/<int:book_id>", methods=["POST"])
 @login_required
 def delete_book(book_id):
-    if not current_user.role=='admin': flash("Unauthorized"); return redirect(url_for("admin_dashboard"))
+    if current_user.role != 'admin':
+        flash("Unauthorized")
+        return redirect(url_for("admin_dashboard"))
+
     b = Book.query.get_or_404(book_id)
+
     try:
         Completion.query.filter_by(book_id=b.id).delete()
         db.session.delete(b)
@@ -432,7 +436,9 @@ def delete_book(book_id):
     except:
         db.session.rollback()
         flash("Error deleting book")
+
     return redirect(url_for("admin_dashboard"))
+
 
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
