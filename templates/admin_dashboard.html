@@ -31,7 +31,12 @@
 <body>
 
 <div class="container py-4">
-  <h2 class="text-center mb-4 text-dark">Admin Dashboard</h2>
+
+  <!-- 🔥 LOGOUT BUTTON ADDED HERE -->
+  <div class="d-flex justify-content-between mb-3">
+      <h2 class="text-dark">Admin Dashboard</h2>
+      <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Logout</a>
+  </div>
 
   <!-- Tabs -->
   <ul class="nav nav-tabs" id="adminTabs" role="tablist">
@@ -197,12 +202,12 @@
                   View
                 </a>
 
-               <form action="{{ url_for('delete_book', book_id=b.id) }}"
-      method="POST"
-      onsubmit="return confirm('Delete this book?');"
-      style="display:inline;">
-  <button class="btn btn-danger btn-sm">Delete</button>
-</form>
+                <form action="{{ url_for('delete_book', book_id=b.id) }}"
+                      method="POST"
+                      onsubmit="return confirm('Delete this book?');"
+                      style="display:inline;">
+                  <button class="btn btn-danger btn-sm">Delete</button>
+                </form>
 
               </td>
             </tr>
@@ -235,7 +240,7 @@
           </li>
           {% endfor %}
         </ul>
- 
+
         {% endif %}
       </div>
     </div>
