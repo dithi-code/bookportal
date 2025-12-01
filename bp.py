@@ -198,19 +198,36 @@ def logout():
 def admin_dashboard():
     try:
         if current_user.role != 'admin':
-            flash('Access denied'); 
+            flash('Access denied')
             return redirect(url_for('login'))
-        search = request.args.get('search','').strip()
+
+        # Read active tab from URL
+        tab = request.args.get('tab', 'teachers')   # default is teachers tab
+
+        search = request.args.get('search', '').strip()
+
         books_query = Book.query.order_by(Book.uploaded_at.desc())
+
         if search:
             books_query = books_query.filter(Book.original_name.ilike(f"%{search}%"))
+
         books = books_query.all()
         teachers = User.query.filter_by(role='teacher').all()
         notes = Notification.query.order_by(Notification.created_at.desc()).all()
-        return render_template('admin_dashboard.html', teachers=teachers, books=books, notifications=notes, search_query=search)
+
+        return render_template(
+            'admin_dashboard.html',
+            teachers=teachers,
+            books=books,
+            notifications=notes,
+            search_query=search,
+            tab=tab   # send active tab to template
+        )
+
     except Exception as e:
         app.logger.exception("Error in admin_dashboard")
         return f"Server Error: {str(e)}", 500
+
 
 @app.route('/admin/approve/<int:user_id>', methods=['POST'])
 @login_required
