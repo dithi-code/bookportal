@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Teacher Dashboard</title>
+  <title>Teacher Books</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -60,68 +60,27 @@
 
 <div class="container">
 
-  <!-- TOP PAGE TITLE -->
-  <div class="page-title">Teacher Dashboard</div>
+  <!-- PAGE TITLE -->
+  <div class="page-title">Teacher Books</div>
 
-  <!-- MAIN TABS (Teachers | Books | Notifications) -->
+  <!-- ONLY ONE TAB: BOOKS -->
   <ul class="nav nav-tabs" id="mainTabs" role="tablist">
-
       <li class="nav-item" role="presentation">
-        <button class="nav-link {% if tab=='teachers' %}active{% endif %}"
-                data-bs-toggle="tab"
-                data-bs-target="#teachers"
-                type="button" role="tab">
-          Teachers
-        </button>
-      </li>
-
-      <li class="nav-item" role="presentation">
-        <button class="nav-link {% if tab=='books' %}active{% endif %}"
+        <button class="nav-link active"
                 data-bs-toggle="tab"
                 data-bs-target="#books"
                 type="button" role="tab">
           Books
         </button>
       </li>
-
-      <li class="nav-item" role="presentation">
-        <button class="nav-link {% if tab=='notifications' %}active{% endif %}"
-                data-bs-toggle="tab"
-                data-bs-target="#notifications"
-                type="button" role="tab">
-          Notifications
-        </button>
-      </li>
-
   </ul>
 
-  <!-- TAB CONTENT -->
+  <!-- BOOKS TAB CONTENT -->
   <div class="tab-content mt-4">
 
-    <!-- =============== TEACHERS TAB =============== -->
-    <div class="tab-pane fade {% if tab=='teachers' %}show active{% endif %}" id="teachers">
+    <div class="tab-pane fade show active" id="books">
 
-      <h4 class="mt-3">Teacher List</h4>
-
-      {% if teachers %}
-      <ul class="list-group mt-3">
-        {% for t in teachers %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <strong>{{ t.name }}</strong>
-          <small>{{ t.email }}</small>
-        </li>
-        {% endfor %}
-      </ul>
-      {% else %}
-      <p class="mt-3 text-muted">No teachers found.</p>
-      {% endif %}
-
-    </div>
-
-    <!-- =============== BOOKS TAB =============== -->
-    <div class="tab-pane fade {% if tab=='books' %}show active{% endif %}" id="books">
-
-        <!-- LEVEL TABS INSIDE BOOKS TAB -->
+        <!-- LEVEL TABS -->
         <ul class="nav nav-tabs mt-3" id="levelTabs" role="tablist">
           {% for lvl in level_tabs %}
             <li class="nav-item" role="presentation">
@@ -136,7 +95,7 @@
           {% endfor %}
         </ul>
 
-        <!-- LEVEL CONTENT -->
+        <!-- SHOW BOOKS INSIDE LEVELS -->
         <div class="tab-content mt-4">
 
           {% set categories = ['Story','Words','Workout','Comprehension','Test'] %}
@@ -177,26 +136,6 @@
           {% endfor %}
 
         </div>
-
-    </div>
-
-    <!-- =============== NOTIFICATIONS TAB =============== -->
-    <div class="tab-pane fade {% if tab=='notifications' %}show active{% endif %}" id="notifications">
-
-        <h4 class="mt-3">Notifications</h4>
-
-        {% if notifications %}
-            <ul class="list-group mt-3">
-                {% for n in notifications %}
-                    <li class="list-group-item">
-                        {{ n.message }}
-                        <span class="text-muted float-end">{{ n.created_at.strftime('%d-%m-%Y %I:%M %p') }}</span>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p class="text-muted mt-3">No notifications.</p>
-        {% endif %}
 
     </div>
 
