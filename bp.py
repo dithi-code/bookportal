@@ -423,21 +423,22 @@ def teacher_books():
 @login_required
 def delete_book(book_id):
 
+    # Ensure only admin can delete
     if current_user.role != 'admin':
-        flash("Unauthorized")
+        flash("Unauthorized access", "danger")
         return redirect(url_for("admin_dashboard"))
 
-    b = Book.query.get_or_404(book_id)
+    book = Book.query.get_or_404(book_id)
 
     try:
-        Completion.query.filter_by(book_id=b.id).delete()
-        db.session.delete(b)
+        Completion.query.filter_by(book_id=book.id).delete()
+        db.session.delete(book)
         db.session.commit()
-        flash("Book deleted successfully")
+        flash("Book deleted successfully", "success")
     except Exception as e:
         db.session.rollback()
-        flash("Error deleting book")
-
+        flash("Error deleting book", "danger")
+    
     return redirect(url_for("admin_dashboard"))
 
 
