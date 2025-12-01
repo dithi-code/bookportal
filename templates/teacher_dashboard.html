@@ -45,7 +45,6 @@
       font-style: italic;
     }
 
-    /* Make tabs centered and clean */
     .nav-tabs {
       justify-content: center;
       border-bottom: 2px solid #cfd8ff;
@@ -61,10 +60,20 @@
       color: #fff;
       border-color: #4a6cf7;
     }
+
+    /* Logout button position */
+    .logout-btn {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+    }
   </style>
 </head>
 
 <body>
+
+<!-- LOGOUT BUTTON -->
+<a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm logout-btn">Logout</a>
 
 <div class="container">
 
