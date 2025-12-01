@@ -289,7 +289,7 @@ def upload_book():
         db.session.commit()
 
         flash("Book uploaded successfully!", "success")
-        return redirect(url_for("upload_book"))
+        return redirect(url_for("admin_dashboard"))
 
     return render_template("upload_book.html")
 
