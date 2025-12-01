@@ -426,7 +426,7 @@ def delete_book(book_id):
     # Ensure only admin can delete
     if current_user.role != 'admin':
         flash("Unauthorized access", "danger")
-        return redirect(url_for("admin_dashboard"))
+        return redirect(url_for("admin_dashboard", tab="books"))
 
     book = Book.query.get_or_404(book_id)
 
