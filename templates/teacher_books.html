@@ -45,7 +45,6 @@
       font-style: italic;
     }
 
-    /* Make tabs centered and clean */
     .nav-tabs {
       justify-content: center;
       border-bottom: 2px solid #cfd8ff;
@@ -68,10 +67,8 @@
 
 <div class="container">
 
-  <!-- PAGE TITLE -->
   <div class="page-title">Books</div>
 
-  <!-- LEVEL TABS -->
   <ul class="nav nav-tabs" id="levelTabs" role="tablist">
     {% for lvl in level_tabs %}
       <li class="nav-item" role="presentation">
@@ -86,7 +83,6 @@
     {% endfor %}
   </ul>
 
-  <!-- TAB CONTENT -->
   <div class="tab-content mt-4">
 
     {% set categories = ['Story','Words','Workout','Comprehension','Test'] %}
@@ -106,8 +102,9 @@
               {% if (b.category or '')|lower == cat|lower %}
                 {% set has_books = true %}
                 <div class="book-card">
-                  <!-- FIXED: show only uploaded PDF name -->
-                  <strong>{{ b.filename }}</strong><br>
+
+                  <!-- SHOW ORIGINAL FILE NAME HERE -->
+                  <strong>{{ b.original_name }}</strong><br>
 
                   <small>Level: {{ b.levels }}</small><br>
 
