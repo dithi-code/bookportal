@@ -106,7 +106,7 @@
               {% if (b.category or '')|lower == cat|lower %}
                 {% set has_books = true %}
                 <div class="book-card">
-                  <strong>{{ b.title or b.original_name }}</strong><br>
+                  <strong>{{ b.original_name }}</strong><br>
                   <small>Level: {{ b.levels }}</small><br>
                   <a href="{{ url_for('view_book', book_id=b.id) }}"
                      class="btn btn-sm btn-primary mt-2">
