@@ -468,6 +468,14 @@ def forgot_password():
         return redirect(url_for('login'))
     return render_template('forgot_password.html')
 
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash("Logged out successfully!", "success")
+    return redirect(url_for("login"))
+
+
 
 with app.app_context():
     db.create_all()
