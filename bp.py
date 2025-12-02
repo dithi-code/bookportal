@@ -91,7 +91,6 @@ class Notification(db.Model):
 
 class Completion(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     book_id = db.Column(db.Integer, db.ForeignKey("book.id"))
     completed_at = db.Column(db.DateTime, default=datetime.utcnow)
 
