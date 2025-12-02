@@ -447,15 +447,22 @@ def delete_book(book_id):
     book = Book.query.get_or_404(book_id)
 
     try:
+        # delete completions linked to this book
         Completion.query.filter_by(book_id=book.id).delete(synchronize_session=False)
+
+        # delete the book
         db.session.delete(book)
         db.session.commit()
+
         flash("Book deleted successfully", "success")
+
     except Exception as e:
         db.session.rollback()
+        print("🔥 DELETE BOOK ERROR:", e)   # <-- Print the problem
         flash("Error deleting book", "danger")
 
     return redirect(url_for("admin_dashboard", tab="books"))
+
 
 
 
