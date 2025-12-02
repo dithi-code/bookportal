@@ -306,7 +306,7 @@ def upload_book():
         db.session.commit()
 
         flash("Book uploaded successfully!", "success")
-        return redirect(url_for("admin_dashboard"))
+        return redirect(url_for("admin_dashboard", tab="books"))
 
     return render_template("upload_book.html")
 
@@ -440,7 +440,6 @@ def teacher_books():
 @login_required
 def delete_book(book_id):
 
-    # Ensure only admin can delete
     if current_user.role != 'admin':
         flash("Unauthorized access", "danger")
         return redirect(url_for("admin_dashboard", tab="books"))
@@ -448,15 +447,17 @@ def delete_book(book_id):
     book = Book.query.get_or_404(book_id)
 
     try:
-        Completion.query.filter_by(book_id=book.id).delete()
+        Completion.query.filter_by(book_id=book.id).delete(synchronize_session=False)
         db.session.delete(book)
         db.session.commit()
         flash("Book deleted successfully", "success")
     except Exception as e:
         db.session.rollback()
         flash("Error deleting book", "danger")
-    
-    return redirect(url_for("admin_dashboard"))
+
+    return redirect(url_for("admin_dashboard", tab="books"))
+
+
 
 
 @app.route('/forgot_password', methods=['GET', 'POST'])
