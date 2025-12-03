@@ -519,27 +519,40 @@ def phonics_tab():
 @app.route("/teacher/phonics/add", methods=["POST"])
 @login_required
 def add_phonics_entry():
+    # Collect Form Inputs
     date = request.form.get("date")
     student_name = request.form.get("student_name")
     level = request.form.get("level")
     book_id = request.form.get("book_id")
     time_taken = request.form.get("time_taken")
-    feedback = request.form.get("feedback")
+    feedback = request.form.get("feedback", "")
 
-    entry = PhonicsEntry(
-        date=date,
-        student_name=student_name,
-        level=level,
-        book_id=book_id,
-        time_taken=time_taken,
-        feedback=feedback,
-        created_by=current_user.id
-    )
+    # Validation
+    if not (date and student_name and level and book_id and time_taken):
+        flash("⚠️ Please fill all required fields.", "danger")
+        return redirect(url_for("phonics_tab"))
 
-    db.session.add(entry)
-    db.session.commit()
+    try:
+        entry = PhonicsEntry(
+            date=date,
+            student_name=student_name,
+            level=level,
+            book_id=book_id,
+            time_taken=time_taken,
+            feedback=feedback,
+            created_by=current_user.id    # teacher ID
+        )
 
-    flash("Phonics Entry Saved Successfully!", "success")
+        db.session.add(entry)
+        db.session.commit()
+
+        flash("✅ Phonics Entry Saved Successfully!", "success")
+
+    except Exception as e:
+        db.session.rollback()
+        flash("❌ Error saving entry. Try again.", "danger")
+        print("Phonics Entry Error:", e)
+
     return redirect(url_for("phonics_tab"))
 
 @app.route("/teacher/phonics/delete/<int:pid>", methods=["POST"])
