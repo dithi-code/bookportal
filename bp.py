@@ -98,13 +98,14 @@ class Completion(db.Model):
 class PhonicsEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.String(20))
-    student_name = db.Column(db.String(150))
+    student_name = db.Column(db.String(100))
     level = db.Column(db.String(50))
     book_id = db.Column(db.Integer, db.ForeignKey("book.id"))
-    time_taken = db.Column(db.Integer)  # minutes
+    time_taken = db.Column(db.Integer)
     feedback = db.Column(db.Text)
-    created_by = db.Column(db.Integer, db.ForeignKey("user.id"))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    book = db.relationship("Book")
+
 
 with app.app_context():
     db.create_all()
