@@ -94,6 +94,21 @@ class Completion(db.Model):
     book_id = db.Column(db.Integer, db.ForeignKey("book.id"))
     completed_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+
+class PhonicsEntry(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.String(20))
+    student_name = db.Column(db.String(150))
+    level = db.Column(db.String(50))
+    book_id = db.Column(db.Integer, db.ForeignKey("book.id"))
+    time_taken = db.Column(db.Integer)  # minutes
+    feedback = db.Column(db.Text)
+    created_by = db.Column(db.Integer, db.ForeignKey("user.id"))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+with app.app_context():
+    db.create_all()
+
 # ----------------------------
 # Loader
 # ----------------------------
@@ -474,6 +489,72 @@ def forgot_password():
         flash(f'If an account exists for "{identifier}", instructions have been sent.')
         return redirect(url_for('login'))
     return render_template('forgot_password.html')
+
+
+@app.route("/teacher/phonics")
+@login_required
+def phonics_tab():
+    if current_user.role != "teacher":
+        return redirect(url_for("login"))
+
+    # Fetch books for dropdown
+    books = Book.query.all()
+
+    # Show previously saved entries
+    entries = PhonicsEntry.query.filter_by(created_by=current_user.id).order_by(
+        PhonicsEntry.id.desc()
+    ).all()
+
+    # Level options
+    levels = ["1","2","3","4","5","6","7","Red","Yellow","Green","Blue"]
+
+    return render_template(
+        "phonics_tab.html",
+        books=books,
+        levels=levels,
+        entries=entries
+    )
+
+@app.route("/teacher/phonics/add", methods=["POST"])
+@login_required
+def add_phonics_entry():
+    date = request.form.get("date")
+    student_name = request.form.get("student_name")
+    level = request.form.get("level")
+    book_id = request.form.get("book_id")
+    time_taken = request.form.get("time_taken")
+    feedback = request.form.get("feedback")
+
+    entry = PhonicsEntry(
+        date=date,
+        student_name=student_name,
+        level=level,
+        book_id=book_id,
+        time_taken=time_taken,
+        feedback=feedback,
+        created_by=current_user.id
+    )
+
+    db.session.add(entry)
+    db.session.commit()
+
+    flash("Phonics Entry Saved Successfully!", "success")
+    return redirect(url_for("phonics_tab"))
+
+@app.route("/teacher/phonics/delete/<int:pid>", methods=["POST"])
+@login_required
+def delete_phonics_entry(pid):
+    entry = PhonicsEntry.query.get_or_404(pid)
+
+    if entry.created_by != current_user.id and current_user.role != "admin":
+        flash("Not allowed", "danger")
+        return redirect(url_for("phonics_tab"))
+
+    db.session.delete(entry)
+    db.session.commit()
+
+    flash("Entry deleted", "success")
+    return redirect(url_for("phonics_tab"))
 
 
 
