@@ -1,0 +1,53 @@
+{% extends "admin_layout.html" %}
+{% block content %}
+
+<h2 class="mb-3">Phonics Entries</h2>
+
+<!-- DOWNLOAD BUTTON -->
+<a href="{{ url_for('download_phonics_csv') }}" class="btn btn-success mb-3">
+  Download CSV
+</a>
+
+{% if entries %}
+<table class="table table-bordered table-striped">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Student</th>
+      <th>Level</th>
+      <th>Book</th>
+      <th>Time (min)</th>
+      <th>Feedback</th>
+      <th>Teacher</th>
+      <th>Delete</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for e in entries %}
+    <tr>
+      <td>{{ e.date }}</td>
+      <td>{{ e.student_name }}</td>
+      <td>{{ e.level }}</td>
+      <td>{{ e.book.original_name if e.book else '' }}</td>
+      <td>{{ e.time_taken }}</td>
+      <td>{{ e.feedback }}</td>
+      <td>{{ e.created_by }}</td>
+
+      <td>
+        <form action="{{ url_for('admin_delete_phonics', pid=e.id) }}"
+              method="POST"
+              onsubmit="return confirm('Delete this entry?');">
+          <button class="btn btn-danger btn-sm">X</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% else %}
+<p>No phonics entries available.</p>
+{% endif %}
+
+{% endblock %}
