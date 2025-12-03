@@ -1,0 +1,75 @@
+{% extends "teacher_layout.html" %}
+{% block content %}
+
+<h2 class="mb-3">Phonics Entry</h2>
+
+<div class="card p-3 shadow-sm">
+
+    <form action="{{ url_for('add_phonics_entry') }}" method="POST">
+
+        <!-- Date -->
+        <label class="mt-2">Date</label>
+        <input type="date" name="date" class="form-control" required>
+
+        <!-- Student Name -->
+        <label class="mt-3">Student Name</label>
+        <input type="text" name="student_name" class="form-control" placeholder="Enter student name" required>
+
+        <!-- Level -->
+        <label class="mt-3">Level</label>
+        <select name="level" class="form-control" required>
+            <option value="">Select Level</option>
+            {% for lvl in levels %}
+                <option value="{{ lvl }}">{{ lvl }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- Book Name Dropdown -->
+        <label class="mt-3">Book</label>
+        <select name="book_id" class="form-control" required>
+            <option value="">Select Book</option>
+            {% for b in books %}
+                <option value="{{ b.id }}">{{ b.original_name }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- Time Taken -->
+        <label class="mt-3">Time Taken (in minutes)</label>
+        <input type="number" name="time_taken" class="form-control" min="1" placeholder="e.g. 15" required>
+
+        <!-- Feedback -->
+        <label class="mt-3">Feedback</label>
+        <textarea name="feedback" rows="4" class="form-control" placeholder="Enter feedback"></textarea>
+
+        <button class="btn btn-primary mt-3">Submit Entry</button>
+    </form>
+</div>
+
+<hr class="my-4">
+
+<h4>Saved Entries</h4>
+
+{% if entries %}
+    <div class="list-group">
+        {% for e in entries %}
+            <div class="list-group-item">
+                <strong>{{ e.student_name }}</strong>
+                <span class="badge bg-info ms-2">{{ e.level }}</span>
+                <p class="mt-2"><b>Book:</b> {{ e.book.original_name }}</p>
+                <p><b>Date:</b> {{ e.date }}</p>
+                <p><b>Time:</b> {{ e.time_taken }} mins</p>
+                <p><b>Feedback:</b> {{ e.feedback }}</p>
+
+                <form method="POST"
+                      action="{{ url_for('delete_phonics_entry', pid=e.id) }}"
+                      onsubmit="return confirm('Delete entry?');">
+                    <button class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>No phonics entries yet.</p>
+{% endif %}
+
+{% endblock %}
