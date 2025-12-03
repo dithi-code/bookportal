@@ -56,90 +56,53 @@
   <!-- PAGE TITLE -->
   <div class="page-title">Teacher Books</div>
 
-  <!-- two  TAB -->
- <!-- NAV TABS: Books (left) + Phonics Entry (right) -->
-<ul class="nav nav-tabs" role="tablist">
-  <!-- left side tabs -->
-  <li class="nav-item" role="presentation">
-    <button class="nav-link active"
-            id="books-tab"
-            data-bs-toggle="tab"
-            data-bs-target="#books"
-            type="button"
-            role="tab">
-      Books
-    </button>
-  </li>
+  <!-- TOP TABS: Books + Phonics -->
+  <ul class="nav nav-tabs" role="tablist">
 
-  <!-- right-aligned tab -->
-  <li class="nav-item ms-auto" role="presentation">
-    <button class="nav-link"
-            id="phonics-tab"
-            data-bs-toggle="tab"
-            data-bs-target="#phonics"
-            type="button"
-            role="tab">
-      Phonics Entry
-    </button>
-  </li>
-</ul>
+    <!-- Books Tab -->
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active"
+              id="books-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#books"
+              type="button"
+              role="tab">
+        Books
+      </button>
+    </li>
 
-<!-- TAB CONTENT -->
-<div class="tab-content mt-4">
-  <!-- BOOKS TAB (your existing books content should be here) -->
-  <div class="tab-pane fade show active" id="books" role="tabpanel" aria-labelledby="books-tab">
-    <!-- ... your existing books-level tabs and content ... -->
-  </div>
+    <!-- Phonics right aligned -->
+    <li class="nav-item ms-auto" role="presentation">
+      <button class="nav-link"
+              id="phonics-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#phonics"
+              type="button"
+              role="tab">
+        Phonics Entry
+      </button>
+    </li>
 
-  <!-- PHONICS TAB PANE (placed alongside books pane) -->
-  <div class="tab-pane fade" id="phonics" role="tabpanel" aria-labelledby="phonics-tab">
-    <div class="card p-4 mt-3">
-      <h4>🗓️ Enter Daily Record</h4>
+  </ul>
 
-      <form method="POST" action="{{ url_for('phonics_dashboard') }}" id="phonicsForm">
-        <div class="mb-3">
-          <label>Date</label>
-          <input type="date" name="date" class="form-control" required>
-        </div>
+  <!-- MAIN TAB CONTENT -->
+  <div class="tab-content mt-4">
 
-        <div class="mb-3">
-          <label>Student Name</label>
-          <input type="text" name="student_name" class="form-control" required>
-        </div>
+    <!-- BOOKS TAB -->
+    <div class="tab-pane fade show active" id="books" role="tabpanel" aria-labelledby="books-tab">
 
-        <div class="mb-3">
-          <label>Level</label>
-          <select name="level" class="form-select" id="levelSelectPhonics" required>
-            <option value="" disabled selected>Select your level</option>
-            {% for lvl in level_tabs %}
-              <option value="{{ lvl }}">{{ lvl }}</option>
-            {% endfor %}
-          </select>
-        </div>
-
-        <div class="mb-3">
-          <label>Book Name</label>
-          <select name="book_id" class="form-select" id="bookSelectPhonics" disabled required>
-            <option value="">--Select Book--</option>
-          </select>
-        </div>
-
-        <div class="mb-3">
-          <label>Time Taken (in minutes)</label>
-          <input type="number" name="time_taken" class="form-control" placeholder="Enter time in minutes" required>
-        </div>
-
-        <div class="mb-3">
-          <label>Feedback</label>
-          <textarea name="feedback" class="form-control" rows="3"></textarea>
-        </div>
-
-        <button type="submit" class="btn btn-success">Submit Record</button>
-      </form>
-    </div>
-  </div>
-</div>
-
+      <!-- LEVEL TABS -->
+      <ul class="nav nav-tabs mt-3" role="tablist">
+        {% for lvl in level_tabs %}
+          <li class="nav-item">
+            <button class="nav-link {% if loop.first %}active{% endif %}"
+                    data-bs-toggle="tab"
+                    data-bs-target="#level-{{ lvl | replace(' ','_') | lower }}">
+              {{ lvl }}
+            </button>
+          </li>
+        {% endfor %}
+      </ul>
 
       <!-- LEVEL CONTENT -->
       <div class="tab-content mt-4">
@@ -152,7 +115,6 @@
 
             {% for cat in categories %}
 
-              {# FILTER BOOKS FOR THIS LEVEL & CATEGORY #}
               {% set cat_books = [] %}
               {% for b in books_by_level[lvl] %}
                 {% if (b.category or '')|lower == cat|lower %}
@@ -160,12 +122,10 @@
                 {% endif %}
               {% endfor %}
 
-              {# SHOW CATEGORY ONLY IF IT HAS BOOKS #}
               {% if cat_books|length > 0 %}
-
                 <div class="category-title">{{ cat }}</div>
-                <div class="d-flex flex-wrap">
 
+                <div class="d-flex flex-wrap">
                   {% for b in cat_books %}
                     <div class="book-card">
                       <strong>{{ b.original_name }}</strong><br>
@@ -176,18 +136,67 @@
                       </a>
                     </div>
                   {% endfor %}
-
                 </div>
-
               {% endif %}
+
             {% endfor %}
 
           </div>
         {% endfor %}
 
       </div>
-
     </div>
+
+    <!-- PHONICS TAB -->
+    <div class="tab-pane fade" id="phonics" role="tabpanel" aria-labelledby="phonics-tab">
+      <div class="card p-4 mt-3">
+        <h4>🗓️ Enter Daily Record</h4>
+
+        <form method="POST" action="{{ url_for('phonics_dashboard') }}" id="phonicsForm">
+
+          <div class="mb-3">
+            <label>Date</label>
+            <input type="date" name="date" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label>Student Name</label>
+            <input type="text" name="student_name" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label>Level</label>
+            <select name="level" class="form-select" id="levelSelectPhonics" required>
+              <option value="" disabled selected>Select your level</option>
+              {% for lvl in level_tabs %}
+                <option value="{{ lvl }}">{{ lvl }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label>Book Name</label>
+            <select name="book_id" class="form-select" id="bookSelectPhonics" disabled required>
+              <option value="">--Select Book--</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label>Time Taken (in minutes)</label>
+            <input type="number" name="time_taken" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label>Feedback</label>
+            <textarea name="feedback" class="form-control" rows="3"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-success">Submit Record</button>
+
+        </form>
+      </div>
+    </div>
+
   </div>
 </div>
 
