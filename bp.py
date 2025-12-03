@@ -557,6 +557,62 @@ def delete_phonics_entry(pid):
     return redirect(url_for("phonics_tab"))
 
 
+@app.route("/admin/phonics")
+@login_required
+def admin_phonics():
+    if current_user.role != "admin":
+        return redirect(url_for("login"))
+
+    entries = PhonicsEntry.query.order_by(PhonicsEntry.id.desc()).all()
+
+    return render_template("admin_phonics.html", entries=entries)
+
+@app.route("/admin/phonics/delete/<int:pid>", methods=["POST"])
+@login_required
+def admin_delete_phonics(pid):
+    if current_user.role != "admin":
+        return redirect(url_for("login"))
+
+    entry = PhonicsEntry.query.get_or_404(pid)
+    db.session.delete(entry)
+    db.session.commit()
+
+    flash("Entry deleted successfully.", "success")
+    return redirect(url_for("admin_phonics"))
+
+@app.route("/admin/phonics/download")
+@login_required
+def download_phonics_csv():
+    if current_user.role != "admin":
+        return redirect(url_for("login"))
+
+    import csv
+    from io import StringIO
+    output = StringIO()
+    writer = csv.writer(output)
+
+    writer.writerow(["Date", "Student Name", "Level", "Book", "Time(min)", "Feedback", "Teacher"])
+
+    entries = PhonicsEntry.query.order_by(PhonicsEntry.id.desc()).all()
+
+    for e in entries:
+        writer.writerow([
+            e.date,
+            e.student_name,
+            e.level,
+            e.book.original_name if e.book else "",
+            e.time_taken,
+            e.feedback,
+            e.created_by
+        ])
+
+    output.seek(0)
+
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment; filename=phonics_entries.csv"}
+    )
 
 
 with app.app_context():
