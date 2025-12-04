@@ -493,20 +493,53 @@ def forgot_password():
     return render_template('forgot_password.html')
 
 
-@app.route("/teacher/phonics")
+@app.route("/teacher/phonics", methods=["GET", "POST"])
 @login_required
 def phonics_tab():
     if current_user.role != "teacher":
         return redirect(url_for("login"))
 
-    # Fetch all books for dropdown
-    books = Book.query.all()
+    if request.method == "POST":
+        # Collect form data
+        date = request.form.get("date")
+        student_name = request.form.get("student_name")
+        level = request.form.get("level")
+        book_id = request.form.get("book_id")
+        time_taken = request.form.get("time_taken")
+        feedback = request.form.get("feedback", "")
 
-    # Fetch only entries created by this teacher
+        # Validate required fields
+        if not (date and student_name and level and book_id and time_taken):
+            flash("⚠️ Please fill all required fields.", "danger")
+            return redirect(url_for("phonics_tab"))
+
+        try:
+            entry = PhonicsEntry(
+                date=date,
+                student_name=student_name,
+                level=level,
+                book_id=book_id,
+                time_taken=time_taken,
+                feedback=feedback,
+                created_by=current_user.id
+            )
+            db.session.add(entry)
+            db.session.commit()
+            flash("✅ Phonics Entry Saved Successfully!", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash("❌ Error saving entry. Try again.", "danger")
+            app.logger.exception("Phonics Entry Error: %s", e)
+
+        return redirect(url_for("phonics_tab"))
+
+    # ----------------------------
+    # GET request: render template
+    # ----------------------------
+    books = Book.query.all()
     entries = PhonicsEntry.query.filter_by(created_by=current_user.id).order_by(
         PhonicsEntry.id.desc()
     ).all()
-
     levels = ["1","2","3","4","5","6","7","Red","Yellow","Green","Blue"]
 
     return render_template(
@@ -517,43 +550,8 @@ def phonics_tab():
     )
 
 
-@app.route("/teacher/phonics/add", methods=["POST"])
-@login_required
-def add_phonics_entry():
-    if current_user.role != "teacher":
-        return redirect(url_for("login"))
 
-    # Collect form data
-    date = request.form.get("date")
-    student_name = request.form.get("student_name")
-    level = request.form.get("level")
-    book_id = request.form.get("book_id")
-    time_taken = request.form.get("time_taken")
-    feedback = request.form.get("feedback", "")
 
-    if not (date and student_name and level and book_id and time_taken):
-        flash("⚠️ Please fill all required fields.", "danger")
-        return redirect(url_for("phonics_tab"))
-
-    try:
-        entry = PhonicsEntry(
-            date=date,
-            student_name=student_name,
-            level=level,
-            book_id=book_id,
-            time_taken=time_taken,
-            feedback=feedback,
-            created_by=current_user.id
-        )
-        db.session.add(entry)
-        db.session.commit()
-        flash("✅ Phonics Entry Saved Successfully!", "success")
-    except Exception as e:
-        db.session.rollback()
-        flash("❌ Error saving entry. Try again.", "danger")
-        app.logger.exception("Phonics Entry Error: %s", e)
-
-    return redirect(url_for("phonics_tab"))
 
 
 @app.route("/teacher/phonics/delete/<int:pid>", methods=["POST"])
