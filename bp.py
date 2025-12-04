@@ -603,13 +603,24 @@ def download_phonics_csv():
     import csv
     from io import StringIO
     from flask import Response
+    from sqlalchemy.orm import joinedload
 
     output = StringIO()
     writer = csv.writer(output)
     writer.writerow(["Date", "Student Name", "Level", "Book", "Time(min)", "Feedback", "Teacher"])
 
-    entries = PhonicsEntry.query.order_by(PhonicsEntry.id.desc()).all()
+    # Use joinedload to fetch related book and user (teacher) in one query
+    entries = PhonicsEntry.query.options(
+        joinedload(PhonicsEntry.book)  # load book relationship
+    ).order_by(PhonicsEntry.id.desc()).all()
+
+    # Collect all teacher IDs to batch fetch names
+    teacher_ids = list(set(e.created_by for e in entries))
+    teachers = User.query.filter(User.id.in_(teacher_ids)).all()
+    teacher_map = {t.id: t.name for t in teachers}
+
     for e in entries:
+        teacher_name = teacher_map.get(e.created_by, "Unknown")
         writer.writerow([
             e.date,
             e.student_name,
@@ -617,7 +628,7 @@ def download_phonics_csv():
             e.book.original_name if e.book else "",
             e.time_taken,
             e.feedback,
-            e.teacher.name if e.teacher else e.created_by
+            teacher_name
         ])
 
     output.seek(0)
@@ -629,8 +640,6 @@ def download_phonics_csv():
 
 
 
-
-
 @app.route("/get_books_by_level/<level>")
 @login_required
 def get_books_by_level(level):
@@ -639,8 +648,6 @@ def get_books_by_level(level):
     like_pattern = f"%{level}%"
     books = Book.query.filter(Book.levels.ilike(like_pattern)).order_by(Book.uploaded_at.desc()).all()
     return jsonify([{"id": b.id, "original_name": b.original_name} for b in books])
-
-
 
 
 # ----------------------------
