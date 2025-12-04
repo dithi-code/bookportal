@@ -98,14 +98,15 @@ class Completion(db.Model):
 
 class PhonicsEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.String(20))
-    student_name = db.Column(db.String(100))
-    level = db.Column(db.String(50))
-    book_id = db.Column(db.Integer, db.ForeignKey("book.id"))
-    time_taken = db.Column(db.Integer)
+    date = db.Column(db.String(20), nullable=False)
+    student_name = db.Column(db.String(100), nullable=False)
+    level = db.Column(db.String(50), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey("book.id"), nullable=False)
+    time_taken = db.Column(db.Integer, nullable=False)
     feedback = db.Column(db.Text)
-
-    book = db.relationship("Book")
+    book = db.relationship("Book", backref="phonics_entries")
+    created_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    teacher = db.relationship("User", backref="phonics_entries")
 
 
 with app.app_context():
@@ -136,8 +137,7 @@ def create_db_and_admin():
         except Exception:
             db.session.rollback()
 
-with app.app_context():
-    create_db_and_admin()
+
 
 # ----------------------------
 # Helpers
@@ -499,15 +499,14 @@ def phonics_tab():
     if current_user.role != "teacher":
         return redirect(url_for("login"))
 
-    # Fetch books for dropdown
+    # Fetch all books for dropdown
     books = Book.query.all()
 
-    # Show previously saved entries
+    # Fetch only entries created by this teacher
     entries = PhonicsEntry.query.filter_by(created_by=current_user.id).order_by(
         PhonicsEntry.id.desc()
     ).all()
 
-    # Level options
     levels = ["1","2","3","4","5","6","7","Red","Yellow","Green","Blue"]
 
     return render_template(
@@ -517,10 +516,14 @@ def phonics_tab():
         entries=entries
     )
 
+
 @app.route("/teacher/phonics/add", methods=["POST"])
 @login_required
 def add_phonics_entry():
-    # Collect Form Inputs
+    if current_user.role != "teacher":
+        return redirect(url_for("login"))
+
+    # Collect form data
     date = request.form.get("date")
     student_name = request.form.get("student_name")
     level = request.form.get("level")
@@ -528,7 +531,6 @@ def add_phonics_entry():
     time_taken = request.form.get("time_taken")
     feedback = request.form.get("feedback", "")
 
-    # Validation
     if not (date and student_name and level and book_id and time_taken):
         flash("⚠️ Please fill all required fields.", "danger")
         return redirect(url_for("phonics_tab"))
@@ -541,20 +543,18 @@ def add_phonics_entry():
             book_id=book_id,
             time_taken=time_taken,
             feedback=feedback,
-            created_by=current_user.id    # teacher ID
+            created_by=current_user.id
         )
-
         db.session.add(entry)
         db.session.commit()
-
         flash("✅ Phonics Entry Saved Successfully!", "success")
-
     except Exception as e:
         db.session.rollback()
         flash("❌ Error saving entry. Try again.", "danger")
-        print("Phonics Entry Error:", e)
+        app.logger.exception("Phonics Entry Error: %s", e)
 
     return redirect(url_for("phonics_tab"))
+
 
 @app.route("/teacher/phonics/delete/<int:pid>", methods=["POST"])
 @login_required
@@ -567,7 +567,6 @@ def delete_phonics_entry(pid):
 
     db.session.delete(entry)
     db.session.commit()
-
     flash("Entry deleted", "success")
     return redirect(url_for("phonics_tab"))
 
@@ -579,8 +578,8 @@ def admin_phonics():
         return redirect(url_for("login"))
 
     entries = PhonicsEntry.query.order_by(PhonicsEntry.id.desc()).all()
-
     return render_template("admin_phonics.html", entries=entries)
+
 
 @app.route("/admin/phonics/delete/<int:pid>", methods=["POST"])
 @login_required
@@ -591,9 +590,9 @@ def admin_delete_phonics(pid):
     entry = PhonicsEntry.query.get_or_404(pid)
     db.session.delete(entry)
     db.session.commit()
-
     flash("Entry deleted successfully.", "success")
     return redirect(url_for("admin_phonics"))
+
 
 @app.route("/admin/phonics/download")
 @login_required
@@ -603,13 +602,13 @@ def download_phonics_csv():
 
     import csv
     from io import StringIO
+    from flask import Response
+
     output = StringIO()
     writer = csv.writer(output)
-
     writer.writerow(["Date", "Student Name", "Level", "Book", "Time(min)", "Feedback", "Teacher"])
 
     entries = PhonicsEntry.query.order_by(PhonicsEntry.id.desc()).all()
-
     for e in entries:
         writer.writerow([
             e.date,
@@ -618,16 +617,18 @@ def download_phonics_csv():
             e.book.original_name if e.book else "",
             e.time_taken,
             e.feedback,
-            e.created_by
+            e.teacher.name if e.teacher else e.created_by
         ])
 
     output.seek(0)
-
     return Response(
         output.getvalue(),
         mimetype="text/csv",
         headers={"Content-Disposition": "attachment; filename=phonics_entries.csv"}
     )
+
+
+
 
 
 @app.route("/get_books_by_level/<level>")
@@ -641,8 +642,6 @@ def get_books_by_level(level):
 
 
 
-with app.app_context():
-    db.create_all()
 
 # ----------------------------
 # Run
