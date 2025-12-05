@@ -232,16 +232,15 @@ def admin_dashboard():
         notes = Notification.query.order_by(Notification.created_at.desc()).all()
         phonics_entries = PhonicsEntry.query.order_by(PhonicsEntry.id.desc()).all()
 
-       return render_template(
-    'admin_dashboard.html',
-    teachers=teachers,
-    books=books,
-    notifications=notes,
-    phonics_entries=phonics_entries,   # <-- ADD THIS LINE
-    search_query=search,
-    tab=tab
-)
-
+        return render_template(
+            'admin_dashboard.html',
+            teachers=teachers,
+            books=books,
+            notifications=notes,
+            phonics_entries=phonics_entries,
+            search_query=search,
+            tab=tab
+        )
 
     except Exception as e:
         app.logger.exception("Error in admin_dashboard")
