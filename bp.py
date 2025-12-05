@@ -250,22 +250,29 @@ def admin_dashboard():
 @app.route('/admin/approve/<int:user_id>', methods=['POST'])
 @login_required
 def admin_approve(user_id):
-    if current_user.role != 'admin': return redirect(url_for('login'))
+    if current_user.role != 'admin':
+        return redirect(url_for('login'))
+
     u = User.query.get_or_404(user_id)
     u.is_approved = True
     u.allow_login = True
     db.session.commit()
+
     notify_admin(f"Admin approved teacher '{u.name}'")
     flash(f"Teacher {u.name} approved")
     return redirect(url_for('admin_dashboard'))
 
+
 @app.route('/admin/toggle_allow/<int:user_id>', methods=['POST'])
 @login_required
 def admin_toggle_allow(user_id):
-    if current_user.role != 'admin': return redirect(url_for('login'))
+    if current_user.role != 'admin':
+        return redirect(url_for('login'))
+
     u = User.query.get_or_404(user_id)
     u.allow_login = not u.allow_login
     db.session.commit()
+
     notify_admin(f"Admin toggled allow_login for '{u.name}' -> {u.allow_login}")
     flash(f"Toggled login for {u.name}")
     return redirect(url_for('admin_dashboard'))
