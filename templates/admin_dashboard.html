@@ -47,22 +47,27 @@
       </button>
     </li>
 
-    <li class="nav-item">
-      <button class="nav-link {% if tab=='books' %}active{% endif %}"
-              id="books-tab" data-bs-toggle="tab" data-bs-target="#books">
-        Books
-      </button>
-    </li>
-<li class="nav-item">
-  <a class="nav-link" href="{{ url_for('admin_phonics') }}">Phonics Entries</a>
+  <li class="nav-item">
+  <button class="nav-link {% if tab=='books' %}active{% endif %}"
+          id="books-tab" data-bs-toggle="tab" data-bs-target="#books">
+    Books
+  </button>
 </li>
 
-    <li class="nav-item">
-      <button class="nav-link {% if tab=='notifications' %}active{% endif %}"
-              id="notifications-tab" data-bs-toggle="tab" data-bs-target="#notifications">
-        Notifications
-      </button>
-    </li>
+<li class="nav-item">
+  <button class="nav-link {% if tab=='phonics' %}active{% endif %}"
+          id="phonics-tab" data-bs-toggle="tab" data-bs-target="#phonics">
+    Phonics Entries
+  </button>
+</li>
+
+<li class="nav-item">
+  <button class="nav-link {% if tab=='notifications' %}active{% endif %}"
+          id="notifications-tab" data-bs-toggle="tab" data-bs-target="#notifications">
+    Notifications
+  </button>
+</li>
+
   </ul>
 
   <div class="tab-content">
