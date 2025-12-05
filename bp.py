@@ -16,7 +16,7 @@ from sqlalchemy import func  # add at top with other imports
 # App config
 # ----------------------------
 app = Flask(__name__)
-
+ 
 # Secret Key
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'devsecret')
 
