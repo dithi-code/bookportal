@@ -230,15 +230,18 @@ def admin_dashboard():
         books = books_query.all()
         teachers = User.query.filter_by(role='teacher').all()
         notes = Notification.query.order_by(Notification.created_at.desc()).all()
+        phonics_entries = PhonicsEntry.query.order_by(PhonicsEntry.id.desc()).all()
 
-        return render_template(
-            'admin_dashboard.html',
-            teachers=teachers,
-            books=books,
-            notifications=notes,
-            search_query=search,
-            tab=tab   # send active tab to template
-        )
+       return render_template(
+    'admin_dashboard.html',
+    teachers=teachers,
+    books=books,
+    notifications=notes,
+    phonics_entries=phonics_entries,   # <-- ADD THIS LINE
+    search_query=search,
+    tab=tab
+)
+
 
     except Exception as e:
         app.logger.exception("Error in admin_dashboard")
