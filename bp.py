@@ -411,7 +411,7 @@ def teacher_dashboard():
         return redirect(url_for('login'))
 
     # LEVELS + COLOR LEVELS
-    level_tabs = ["1","2","3","4","5","6","7","Red","Yellow","Green","Blue"]
+    level_tabs = ["1","2","3","4","5","6","7","Red","Yellow","Green","Blue","Hindi"]
 
     # Get all books
     all_books = Book.query.all()
@@ -521,7 +521,7 @@ def teacher_phonics():
         date = request.form.get("date")
         student_name = request.form.get("student_name")
         level = request.form.get("level")
-        book_id = request.form.get("book_id")
+        book_id = request.form.get("book_name")
         time_taken = request.form.get("time_taken")
         feedback = request.form.get("feedback", "")
 
