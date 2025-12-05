@@ -188,25 +188,31 @@
 
 <!-- JS: Filter books by level -->
 <script>
-const levelSelect = document.getElementById("levelSelect");
-const bookSelect = document.getElementById("bookSelect");
+document.getElementById("levelSelect").addEventListener("change", function () {
+    const selectedLevel = this.value.toLowerCase(); // normalize
 
-levelSelect.addEventListener("change", () => {
-    const selected = levelSelect.value;
+    const bookSelect = document.getElementById("bookSelect");
+    bookSelect.innerHTML = '<option value="">-- Select Book --</option>';
 
-    bookSelect.disabled = false;
+    // loop all options in dropdown
+    const allBooks = document.querySelectorAll("#bookSelect option[data-level]");
 
-    for (let opt of bookSelect.options) {
-        if (opt.value === "" || opt.dataset.level === selected) {
-            opt.style.display = "";
-        } else {
-            opt.style.display = "none";
+    let found = false;
+
+    allBooks.forEach(opt => {
+        const bookLevel = opt.dataset.level.toLowerCase(); // normalize
+
+        if (bookLevel === selectedLevel) {
+            const clone = opt.cloneNode(true);
+            bookSelect.appendChild(clone);
+            found = true;
         }
-    }
+    });
 
-    bookSelect.value = "";
+    bookSelect.disabled = !found;
 });
 </script>
+
 
 
 {% endblock %}
