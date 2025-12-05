@@ -106,7 +106,7 @@ class PhonicsEntry(db.Model):
     feedback = db.Column(db.Text)
     book = db.relationship("Book", backref="phonics_entries")
     created_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    teacher = db.relationship("User", backref="phonics_entries")
+    teacher = db.relationship("User", backref="phonics_entries", foreign_keys=[created_by])
 
 
 with app.app_context():
@@ -209,38 +209,46 @@ def logout():
 # ----------------------------
 # Admin dashboard
 # ----------------------------
+from sqlalchemy.orm import joinedload
+
 @app.route('/admin')
 @login_required
 def admin_dashboard():
-    try:
-        if current_user.role != 'admin':
-            flash('Access denied')
-            return redirect(url_for('login'))
+    if current_user.role != 'admin':
+        flash('Access denied')
+        return redirect(url_for('login'))
 
-        # Read active tab from URL
-        tab = request.args.get('tab', 'teachers')   # default is teachers tab
+    tab = request.args.get('tab', 'teachers')   # default tab
+    search = request.args.get('search', '').strip()
 
-        search = request.args.get('search', '').strip()
+    # Books query
+    books_query = Book.query.order_by(Book.uploaded_at.desc())
+    if search:
+        books_query = books_query.filter(Book.original_name.ilike(f"%{search}%"))
+    books = books_query.all()
 
-        books_query = Book.query.order_by(Book.uploaded_at.desc())
+    # Teachers
+    teachers = User.query.filter_by(role='teacher').all()
 
-        if search:
-            books_query = books_query.filter(Book.original_name.ilike(f"%{search}%"))
+    # Notifications
+    notes = Notification.query.order_by(Notification.created_at.desc()).all()
 
-        books = books_query.all()
-        teachers = User.query.filter_by(role='teacher').all()
-        notes = Notification.query.order_by(Notification.created_at.desc()).all()
-        phonics_entries = PhonicsEntry.query.order_by(PhonicsEntry.id.desc()).all()
+    # Phonics entries (with related book and teacher loaded)
+    phonics_entries = PhonicsEntry.query.options(
+        joinedload(PhonicsEntry.book),
+        joinedload(PhonicsEntry.teacher)
+    ).order_by(PhonicsEntry.id.desc()).all()
 
-        return render_template(
-            'admin_dashboard.html',
-            teachers=teachers,
-            books=books,
-            notifications=notes,
-            phonics_entries=phonics_entries,
-            search_query=search,
-            tab=tab
-        )
+    return render_template(
+        'admin_dashboard.html',
+        teachers=teachers,
+        books=books,
+        notifications=notes,
+        phonics_entries=phonics_entries,
+        search_query=search,
+        tab=tab
+    )
+
 
     except Exception as e:
         app.logger.exception("Error in admin_dashboard")
