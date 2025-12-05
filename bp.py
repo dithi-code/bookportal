@@ -218,37 +218,38 @@ def admin_dashboard():
         flash('Access denied')
         return redirect(url_for('login'))
 
-    tab = request.args.get('tab', 'teachers')   # default tab
-    search = request.args.get('search', '').strip()
+    try:
+        # Active tab and search
+        tab = request.args.get('tab', 'teachers')   # default to teachers
+        search = request.args.get('search', '').strip()
 
-    # Books query
-    books_query = Book.query.order_by(Book.uploaded_at.desc())
-    if search:
-        books_query = books_query.filter(Book.original_name.ilike(f"%{search}%"))
-    books = books_query.all()
+        # --- Fetch teachers ---
+        teachers = User.query.filter_by(role='teacher').all()
 
-    # Teachers
-    teachers = User.query.filter_by(role='teacher').all()
+        # --- Fetch books, optionally filtered by search ---
+        books_query = Book.query.order_by(Book.uploaded_at.desc())
+        if search:
+            books_query = books_query.filter(Book.original_name.ilike(f"%{search}%"))
+        books = books_query.all()
 
-    # Notifications
-    notes = Notification.query.order_by(Notification.created_at.desc()).all()
+        # --- Fetch notifications ---
+        notifications = Notification.query.order_by(Notification.created_at.desc()).all()
 
-    # Phonics entries (with related book and teacher loaded)
-    phonics_entries = PhonicsEntry.query.options(
-        joinedload(PhonicsEntry.book),
-        joinedload(PhonicsEntry.teacher)
-    ).order_by(PhonicsEntry.id.desc()).all()
+        # --- Fetch phonics entries with book & teacher relationships ---
+        phonics_entries = PhonicsEntry.query.options(
+            joinedload(PhonicsEntry.book),     # load book
+            joinedload(PhonicsEntry.teacher)   # load teacher
+        ).order_by(PhonicsEntry.id.desc()).all()
 
-    return render_template(
-        'admin_dashboard.html',
-        teachers=teachers,
-        books=books,
-        notifications=notes,
-        phonics_entries=phonics_entries,
-        search_query=search,
-        tab=tab
-    )
-
+        return render_template(
+            'admin_dashboard.html',
+            teachers=teachers,
+            books=books,
+            notifications=notifications,
+            phonics_entries=phonics_entries,
+            tab=tab,
+            search_query=search
+        )
 
     except Exception as e:
         app.logger.exception("Error in admin_dashboard")
