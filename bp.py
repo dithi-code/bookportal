@@ -413,7 +413,7 @@ def teacher_dashboard():
         'teacher_dashboard.html',
         level_tabs=level_tabs,
         books_by_level=books_by_level,
-        categories=['Story','Words','Workout','Comprehension','Test']
+        categories=['Story','Words','Workout','Comprehension','Test','Flashcards','Spoken Skill','Whiteboard','Letter Picture Cards']
     )
 
 
