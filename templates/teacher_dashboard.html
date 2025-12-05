@@ -198,26 +198,34 @@ document.addEventListener("DOMContentLoaded", function() {
         bookSelect.disabled = true;
         bookSelect.innerHTML = '<option value="">Loading books...</option>';
 
-        fetch(`/get_books_by_level/${encodeURIComponent(level)}`)
-            .then(response => response.json())
-            .then(data => {
-                bookSelect.innerHTML = '<option value="">--Select Book--</option>';
-                data.forEach(book => {
-                    const option = document.createElement("option");
-                    option.value = book.id;
-                    option.textContent = book.original_name;
-                    bookSelect.appendChild(option);
-                });
-                bookSelect.disabled = data.length === 0;
-            })
-            .catch(err => {
-                console.error("Error fetching books:", err);
-                bookSelect.innerHTML = '<option value="">Error loading books</option>';
-                bookSelect.disabled = true;
-            });
+       <script>
+document.addEventListener("DOMContentLoaded", function() {
+    const levelSelect = document.getElementById("levelSelectPhonics");
+    const bookSelect = document.getElementById("bookSelectPhonics");
+
+    levelSelect.addEventListener("change", function () {
+        const selectedLevel = this.value.toLowerCase();
+
+        bookSelect.innerHTML = '<option value="">--Select Book--</option>';
+
+        const allBooks = document.querySelectorAll('#bookSelect option[data-level]');
+
+        let found = false;
+        allBooks.forEach(opt => {
+            if (opt.dataset.level.toLowerCase() === selectedLevel) {
+                const newOpt = document.createElement("option");
+                newOpt.value = opt.value;
+                newOpt.textContent = opt.textContent;
+                bookSelect.appendChild(newOpt);
+                found = true;
+            }
+        });
+
+        bookSelect.disabled = !found;
     });
 });
 </script>
+
 
 </body>
 </html>
