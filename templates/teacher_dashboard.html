@@ -305,27 +305,18 @@
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const levelSelect = document.getElementById("levelSelectPhonics");
-    const bookSelect = document.getElementById("bookSelectPhonics");
-
-    levelSelect.addEventListener("change", function() {
-        const level = this.value;
-
-        bookSelect.disabled = true;
-        bookSelect.innerHTML = '<option value="">Loading books...</option>';
-
-       <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const levelSelect = document.getElementById("levelSelectPhonics");
-    const bookSelect = document.getElementById("bookSelectPhonics");
+    const bookSelect = document.getElementById("bookSelect"); // match the actual dropdown ID
 
     levelSelect.addEventListener("change", function () {
         const selectedLevel = this.value.toLowerCase();
 
-        bookSelect.innerHTML = '<option value="">--Select Book--</option>';
+        // Clear previous options
+        bookSelect.innerHTML = '<option value="">-- Select Book --</option>';
 
+        // Get all hardcoded options
         const allBooks = document.querySelectorAll('#bookSelect option[data-level]');
-
         let found = false;
+
         allBooks.forEach(opt => {
             if (opt.dataset.level.toLowerCase() === selectedLevel) {
                 const newOpt = document.createElement("option");
@@ -336,7 +327,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
 
-        bookSelect.disabled = !found;
+        bookSelect.disabled = !found; // enable dropdown only if books found
     });
 });
 </script>
@@ -349,6 +340,3 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
-
-
-  <!-- Book Dropdown (Hardcoded) -->
