@@ -186,25 +186,20 @@
 <p>No phonics entries added yet.</p>
 {% endif %}
 
-<!-- JS: Filter books by level -->
 <script>
 document.getElementById("levelSelect").addEventListener("change", function () {
-    const selectedLevel = this.value.toLowerCase(); // normalize
-
+    const selectedLevel = this.value.toLowerCase();
     const bookSelect = document.getElementById("bookSelect");
+
+    // Clear previous options
     bookSelect.innerHTML = '<option value="">-- Select Book --</option>';
 
-    // loop all options in dropdown
-    const allBooks = document.querySelectorAll("#bookSelect option[data-level]");
-
+    const allBooks = document.querySelectorAll('#bookSelect option[data-level]');
     let found = false;
 
     allBooks.forEach(opt => {
-        const bookLevel = opt.dataset.level.toLowerCase(); // normalize
-
-        if (bookLevel === selectedLevel) {
-            const clone = opt.cloneNode(true);
-            bookSelect.appendChild(clone);
+        if (opt.dataset.level.toLowerCase() === selectedLevel) {
+            bookSelect.appendChild(opt.cloneNode(true));
             found = true;
         }
     });
@@ -212,7 +207,6 @@ document.getElementById("levelSelect").addEventListener("change", function () {
     bookSelect.disabled = !found;
 });
 </script>
-
 
 
 {% endblock %}
