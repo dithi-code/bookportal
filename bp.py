@@ -513,12 +513,11 @@ def forgot_password():
 
 @app.route("/teacher/phonics", methods=["GET", "POST"])
 @login_required
-def teacher_dashboard():
+def teacher_phonics():
     if current_user.role != "teacher":
         return redirect(url_for("login"))
 
     if request.method == "POST":
-        # Collect form data
         date = request.form.get("date")
         student_name = request.form.get("student_name")
         level = request.form.get("level")
@@ -526,10 +525,9 @@ def teacher_dashboard():
         time_taken = request.form.get("time_taken")
         feedback = request.form.get("feedback", "")
 
-        # Validate required fields
         if not (date and student_name and level and book_id and time_taken):
             flash("⚠️ Please fill all required fields.", "danger")
-            return redirect(url_for("teacher_dashboard"))
+            return redirect(url_for("teacher_phonics"))
 
         try:
             entry = PhonicsEntry(
@@ -539,9 +537,8 @@ def teacher_dashboard():
                 book_id=book_id,
                 time_taken=time_taken,
                 feedback=feedback,
-                created_by=current_user.id  # <-- this is crucial
+                created_by=current_user.id
             )
-
             db.session.add(entry)
             db.session.commit()
             flash("✅ Phonics Entry Saved Successfully!", "success")
@@ -550,23 +547,22 @@ def teacher_dashboard():
             flash("❌ Error saving entry. Try again.", "danger")
             app.logger.exception("Phonics Entry Error: %s", e)
 
-        return redirect(url_for("teacher_dashboard"))
+        return redirect(url_for("teacher_phonics"))
 
-    # ----------------------------
     # GET request: render template
-    # ----------------------------
     books = Book.query.all()
     entries = PhonicsEntry.query.filter_by(created_by=current_user.id).order_by(
         PhonicsEntry.id.desc()
     ).all()
-    levels = ["1","2","3","4","5","6","7","Red","Yellow","Green","Blue"]
+    levels = ["1","2","3","4","5","6","7","Red","Yellow","Green","Blue","Hindi"]
 
     return render_template(
-        "teacher_dashboard.html",
+        "teacher_dashboard.html",  # you can reuse the same template
         books=books,
         levels=levels,
         entries=entries
     )
+
 
 
 
