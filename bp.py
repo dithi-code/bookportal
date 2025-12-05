@@ -347,7 +347,7 @@ def upload_book():
 @app.route("/books")
 @login_required
 def books():
-    level_tabs = ["1","2","3","4","5","6","7","Red","Yellow","Green","Blue"]
+    level_tabs = ["1","2","3","4","5","6","7","Red","Yellow","Green","Blue","Hindi"]
 
     books = Book.query.all()
     books_by_level = { lvl: [] for lvl in level_tabs }
@@ -513,7 +513,7 @@ def forgot_password():
 
 @app.route("/teacher/phonics", methods=["GET", "POST"])
 @login_required
-def phonics_tab():
+def teacher_dashboard():
     if current_user.role != "teacher":
         return redirect(url_for("login"))
 
@@ -529,7 +529,7 @@ def phonics_tab():
         # Validate required fields
         if not (date and student_name and level and book_id and time_taken):
             flash("⚠️ Please fill all required fields.", "danger")
-            return redirect(url_for("phonics_tab"))
+            return redirect(url_for("teacher_dashboard"))
 
         try:
             entry = PhonicsEntry(
@@ -550,7 +550,7 @@ def phonics_tab():
             flash("❌ Error saving entry. Try again.", "danger")
             app.logger.exception("Phonics Entry Error: %s", e)
 
-        return redirect(url_for("phonics_tab"))
+        return redirect(url_for("teacher_dashboard"))
 
     # ----------------------------
     # GET request: render template
@@ -562,7 +562,7 @@ def phonics_tab():
     levels = ["1","2","3","4","5","6","7","Red","Yellow","Green","Blue"]
 
     return render_template(
-        "phonics_tab.html",
+        "teacher_dashboard.html",
         books=books,
         levels=levels,
         entries=entries
@@ -580,12 +580,12 @@ def delete_phonics_entry(pid):
 
     if entry.created_by != current_user.id and current_user.role != "admin":
         flash("Not allowed", "danger")
-        return redirect(url_for("phonics_tab"))
+        return redirect(url_for("teacher_dashboard"))
 
     db.session.delete(entry)
     db.session.commit()
     flash("Entry deleted", "success")
-    return redirect(url_for("phonics_tab"))
+    return redirect(url_for("teacher_dashboard"))
 
 
 @app.route("/admin/phonics")
