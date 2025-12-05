@@ -638,15 +638,6 @@ def download_phonics_csv():
 
 
 
-@app.route("/get_books_by_level/<level>")
-@login_required
-def get_books_by_level(level):
-    # return books where the level appears in the comma-separated `levels` field
-    # use ILIKE for case-insensitive match
-    like_pattern = f"%{level}%"
-    books = Book.query.filter(Book.levels.ilike(like_pattern)).order_by(Book.uploaded_at.desc()).all()
-    return jsonify([{"id": b.id, "original_name": b.original_name} for b in books])
-
 
 # ----------------------------
 # Run
