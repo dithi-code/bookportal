@@ -305,7 +305,10 @@
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const levelSelect = document.getElementById("levelSelectPhonics");
-    const bookSelect = document.getElementById("bookSelect"); // match the actual dropdown ID
+    const bookSelect = document.getElementById("bookSelect");
+
+    // Store all book options initially
+    const allOptions = Array.from(bookSelect.querySelectorAll('option[data-level]'));
 
     levelSelect.addEventListener("change", function () {
         const selectedLevel = this.value.toLowerCase();
@@ -313,24 +316,23 @@ document.addEventListener("DOMContentLoaded", function() {
         // Clear previous options
         bookSelect.innerHTML = '<option value="">-- Select Book --</option>';
 
-        // Get all hardcoded options
-        const allBooks = document.querySelectorAll('#bookSelect option[data-level]');
-        let found = false;
+        // Filter options by selected level
+        const filtered = allOptions.filter(opt => opt.dataset.level.toLowerCase() === selectedLevel);
 
-        allBooks.forEach(opt => {
-            if (opt.dataset.level.toLowerCase() === selectedLevel) {
-                const newOpt = document.createElement("option");
-                newOpt.value = opt.value;
-                newOpt.textContent = opt.textContent;
-                bookSelect.appendChild(newOpt);
-                found = true;
-            }
+        // Add filtered options
+        filtered.forEach(opt => {
+            const newOpt = document.createElement("option");
+            newOpt.value = opt.value;
+            newOpt.textContent = opt.textContent;
+            bookSelect.appendChild(newOpt);
         });
 
-        bookSelect.disabled = !found; // enable dropdown only if books found
+        // Enable dropdown only if filtered books exist
+        bookSelect.disabled = filtered.length === 0;
     });
 });
 </script>
+
 
 
 </body>
