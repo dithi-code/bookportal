@@ -538,8 +538,9 @@ def phonics_tab():
                 book_id=book_id,
                 time_taken=time_taken,
                 feedback=feedback,
-                created_by=current_user.id
+                created_by=current_user.id  # <-- this is crucial
             )
+
             db.session.add(entry)
             db.session.commit()
             flash("✅ Phonics Entry Saved Successfully!", "success")
