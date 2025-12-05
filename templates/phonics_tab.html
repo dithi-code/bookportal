@@ -187,26 +187,45 @@
 {% endif %}
 
 <script>
-document.getElementById("levelSelect").addEventListener("change", function () {
-    const selectedLevel = this.value.toLowerCase();
-    const bookSelect = document.getElementById("bookSelect");
+document.addEventListener("DOMContentLoaded", function() {
+    const levelSelect = document.getElementById("levelSelectPhonics");
+    const bookSelect = document.getElementById("bookSelectPhonics");
 
-    // Clear previous options
-    bookSelect.innerHTML = '<option value="">-- Select Book --</option>';
+    levelSelect.addEventListener("change", function() {
+        const level = this.value;
 
-    const allBooks = document.querySelectorAll('#bookSelect option[data-level]');
-    let found = false;
+        bookSelect.disabled = true;
+        bookSelect.innerHTML = '<option value="">Loading books...</option>';
 
-    allBooks.forEach(opt => {
-        if (opt.dataset.level.toLowerCase() === selectedLevel) {
-            bookSelect.appendChild(opt.cloneNode(true));
-            found = true;
-        }
+        // Fetch books for selected level from backend
+        fetch(`/get_books_by_level/${encodeURIComponent(level)}`)
+            .then(response => {
+                if (!response.ok) throw new Error("Network response was not ok");
+                return response.json();
+            })
+            .then(data => {
+                bookSelect.innerHTML = '<option value="">--Select Book--</option>';
+                if (data.length === 0) {
+                    bookSelect.disabled = true;
+                    return;
+                }
+                data.forEach(book => {
+                    const option = document.createElement("option");
+                    option.value = book.id;
+                    option.textContent = book.original_name;
+                    bookSelect.appendChild(option);
+                });
+                bookSelect.disabled = false;
+            })
+            .catch(err => {
+                console.error("Error fetching books:", err);
+                bookSelect.innerHTML = '<option value="">Error loading books</option>';
+                bookSelect.disabled = true;
+            });
     });
-
-    bookSelect.disabled = !found;
 });
 </script>
+
 
 
 {% endblock %}
