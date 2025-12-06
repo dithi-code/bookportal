@@ -556,7 +556,7 @@ def teacher_phonics():
     levels = ["1","2","3","4","5","6","7","Red","Yellow","Green","Blue","Hindi"]
     
     return render_template(
-    "teacher_phonics.html",
+    "teacher_dashboard.html",
     books=books,
     levels=levels,
     entries=entries
