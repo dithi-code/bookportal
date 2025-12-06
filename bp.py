@@ -590,8 +590,12 @@ def admin_phonics():
     if current_user.role != "admin":
         return redirect(url_for("login"))
 
-    entries = PhonicsEntry.query.order_by(PhonicsEntry.id.desc()).all()
-    return render_template("admin_phonics.html", entries=entries)
+    entries = PhonicsEntry.query.options(
+        joinedload(PhonicsEntry.book),
+        joinedload(PhonicsEntry.teacher)
+    ).order_by(PhonicsEntry.id.desc()).all()
+
+    return render_template("admin_phonics.html", entries=entrie
 
 
 @app.route("/admin/phonics/delete/<int:pid>", methods=["POST"])
