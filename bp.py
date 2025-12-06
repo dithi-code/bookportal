@@ -521,7 +521,7 @@ def teacher_phonics():
         date = request.form.get("date")
         student_name = request.form.get("student_name")
         level = request.form.get("level")
-        book_id = request.form.get("book_name")
+        book_id = request.form.get("book_id")  # FIXED
         time_taken = request.form.get("time_taken")
         feedback = request.form.get("feedback", "")
 
@@ -555,13 +555,16 @@ def teacher_phonics():
         PhonicsEntry.id.desc()
     ).all()
     levels = ["1","2","3","4","5","6","7","Red","Yellow","Green","Blue","Hindi"]
-
+    
     return render_template(
-        "teacher_dashboard.html",  # you can reuse the same template
-        books=books,
-        levels=levels,
-        entries=entries
-    )
+    "teacher_phonics.html",
+    books=books,
+    levels=levels,
+    entries=entries
+)
+
+
+
 
 
 
