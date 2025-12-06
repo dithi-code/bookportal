@@ -534,11 +534,12 @@ def teacher_phonics():
                 date=date,
                 student_name=student_name,
                 level=level,
-                book_id=book_id,
-                time_taken=time_taken,
+                book_id=int(book_id),   # <-- FIXED
+                time_taken=int(time_taken),
                 feedback=feedback,
                 created_by=current_user.id
             )
+
             db.session.add(entry)
             db.session.commit()
             flash("✅ Phonics Entry Saved Successfully!", "success")
