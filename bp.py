@@ -521,7 +521,7 @@ def teacher_phonics():
         date = request.form.get("date")
         student_name = request.form.get("student_name")
         level = request.form.get("level")
-        book_id = request.form.get("book_id")  # FIXED
+        book_id = request.form.get("book_id")
         time_taken = request.form.get("time_taken")
         feedback = request.form.get("feedback", "")
 
@@ -549,20 +549,22 @@ def teacher_phonics():
 
         return redirect(url_for("teacher_phonics"))
 
-    # GET request: render template
+    # GET request: render dashboard with phonics entries
+    level_tabs = ["1","2","3","4","5","6","7","Red","Yellow","Green","Blue","Hindi"]
     books = Book.query.all()
     entries = PhonicsEntry.query.filter_by(created_by=current_user.id).order_by(
         PhonicsEntry.id.desc()
     ).all()
-    levels = ["1","2","3","4","5","6","7","Red","Yellow","Green","Blue","Hindi"]
-    
+    categories = ['Story','Words','Workout','Comprehension','Test','Flashcards','Spoken Skill','Whiteboard','Letter Picture Cards']
+
     return render_template(
-    "teacher_dashboard.html",
-    books=books,
-    levels=levels,
-    entries=entries,
-    level_tabs=["1","2","3","4","5","6","7","Red","Yellow","Green","Blue","Hindi"]
-)
+        "teacher_dashboard.html",
+        books=books,
+        entries=entries,
+        levels=level_tabs,
+        level_tabs=level_tabs,
+        categories=categories
+    )
 
 
 
