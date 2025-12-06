@@ -101,7 +101,8 @@ class PhonicsEntry(db.Model):
     date = db.Column(db.String(20), nullable=False)
     student_name = db.Column(db.String(100), nullable=False)
     level = db.Column(db.String(50), nullable=False)
-    book_id = db.Column(db.String(100), nullable=False)  # changed to String
+    book_id = db.Column(db.Integer, db.ForeignKey("book.id"), nullable=False)
+    book = db.relationship("Book", backref="phonics_entries")
     time_taken = db.Column(db.Integer, nullable=False)
     feedback = db.Column(db.Text)
     created_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
@@ -559,8 +560,10 @@ def teacher_phonics():
     "teacher_dashboard.html",
     books=books,
     levels=levels,
-    entries=entries
+    entries=entries,
+    level_tabs=["1","2","3","4","5","6","7","Red","Yellow","Green","Blue","Hindi"]
 )
+
 
 
 
