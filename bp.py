@@ -549,17 +549,27 @@ def teacher_phonics():
 
         return redirect(url_for("teacher_phonics"))
 
-    # GET request: render dashboard with phonics entries
+    # GET request
     level_tabs = ["1","2","3","4","5","6","7","Red","Yellow","Green","Blue","Hindi"]
+
     books = Book.query.all()
+
+    # ⭐ FIX: Build books_by_level so template does not break
+    books_by_level = {lvl: [] for lvl in level_tabs}
+    for b in books:
+        if b.level in books_by_level:
+            books_by_level[b.level].append(b)
+
     entries = PhonicsEntry.query.filter_by(created_by=current_user.id).order_by(
         PhonicsEntry.id.desc()
     ).all()
+
     categories = ['Story','Words','Workout','Comprehension','Test','Flashcards','Spoken Skill','Whiteboard','Letter Picture Cards']
 
     return render_template(
         "teacher_dashboard.html",
         books=books,
+        books_by_level=books_by_level,  
         entries=entries,
         levels=level_tabs,
         level_tabs=level_tabs,
