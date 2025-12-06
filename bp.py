@@ -525,6 +525,7 @@ def teacher_phonics():
         time_taken = request.form.get("time_taken")
         feedback = request.form.get("feedback", "")
 
+        # Required field check
         if not (date and student_name and level and book_id and time_taken):
             flash("⚠️ Please fill all required fields.", "danger")
             return redirect(url_for("teacher_phonics"))
@@ -534,8 +535,8 @@ def teacher_phonics():
                 date=date,
                 student_name=student_name,
                 level=level,
-                book_id=int(book_id),   # <-- FIXED
-                time_taken=int(time_taken),
+                book_id=int(book_id),       
+                time_taken=int(time_taken), 
                 feedback=feedback,
                 created_by=current_user.id
             )
@@ -543,6 +544,7 @@ def teacher_phonics():
             db.session.add(entry)
             db.session.commit()
             flash("✅ Phonics Entry Saved Successfully!", "success")
+
         except Exception as e:
             db.session.rollback()
             flash("❌ Error saving entry. Try again.", "danger")
@@ -551,26 +553,32 @@ def teacher_phonics():
         return redirect(url_for("teacher_phonics"))
 
     # GET request
-    level_tabs = ["1","2","3","4","5","6","7","Red","Yellow","Green","Blue","Hindi"]
+    level_tabs = ["1", "2", "3", "4", "5", "6", "7",
+                  "Red", "Yellow", "Green", "Blue", "Hindi"]
 
     books = Book.query.all()
 
-    # ⭐ FIX: Build books_by_level so template does not break
+    # book.levels might contain CSV text → FIXED
     books_by_level = {lvl: [] for lvl in level_tabs}
     for b in books:
-        if b.levels in books_by_level:
-            books_by_level[b.levels].append(b)
+        if b.levels:
+            for lvl in level_tabs:
+                if lvl in b.levels.split(","):
+                    books_by_level[lvl].append(b)
 
-    entries = PhonicsEntry.query.filter_by(created_by=current_user.id).order_by(
-        PhonicsEntry.id.desc()
-    ).all()
+    entries = PhonicsEntry.query.filter_by(
+        created_by=current_user.id
+    ).order_by(PhonicsEntry.id.desc()).all()
 
-    categories = ['Story','Words','Workout','Comprehension','Test','Flashcards','Spoken Skill','Whiteboard','Letter Picture Cards']
+    categories = [
+        'Story', 'Words', 'Workout', 'Comprehension', 'Test',
+        'Flashcards', 'Spoken Skill', 'Whiteboard', 'Letter Picture Cards'
+    ]
 
     return render_template(
         "teacher_dashboard.html",
         books=books,
-        books_by_level=books_by_level,  
+        books_by_level=books_by_level,
         entries=entries,
         levels=level_tabs,
         level_tabs=level_tabs,
