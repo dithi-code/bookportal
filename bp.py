@@ -557,8 +557,8 @@ def teacher_phonics():
     # ⭐ FIX: Build books_by_level so template does not break
     books_by_level = {lvl: [] for lvl in level_tabs}
     for b in books:
-        if b.level in books_by_level:
-            books_by_level[b.level].append(b)
+        if b.levels in books_by_level:
+            books_by_level[b.levels].append(b)
 
     entries = PhonicsEntry.query.filter_by(created_by=current_user.id).order_by(
         PhonicsEntry.id.desc()
