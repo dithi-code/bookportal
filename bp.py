@@ -598,7 +598,7 @@ def admin_phonics():
         joinedload(PhonicsEntry.teacher)
     ).order_by(PhonicsEntry.id.desc()).all()
 
-    return render_template("admin_phonics.html", entries=entrie
+    return render_template("admin_phonics.html", entries=entries)
 
 
 @app.route("/admin/phonics/delete/<int:pid>", methods=["POST"])
