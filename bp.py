@@ -105,6 +105,7 @@ class PhonicsEntry(db.Model):
     book = db.relationship("Book", backref="phonics_entries")
     time_taken = db.Column(db.Integer, nullable=False)
     feedback = db.Column(db.Text)
+    book = db.relationship("Book")
     created_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     teacher = db.relationship("User", backref="phonics_entries", foreign_keys=[created_by])
 
