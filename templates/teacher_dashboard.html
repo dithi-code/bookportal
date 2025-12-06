@@ -334,21 +334,19 @@
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const levelSelect = document.getElementById("levelSelectPhonics");
-    const bookSelect = document.getElementById("bookSelect");
+    const bookSelect = document.getElementById("book_id");   // FIXED
 
-    // Store all book options initially
     const allOptions = Array.from(bookSelect.querySelectorAll('option[data-level]'));
 
     levelSelect.addEventListener("change", function () {
         const selectedLevel = this.value.toLowerCase();
 
-        // Clear previous options
         bookSelect.innerHTML = '<option value="">-- Select Book --</option>';
 
-        // Filter options by selected level
-        const filtered = allOptions.filter(opt => opt.dataset.level.toLowerCase() === selectedLevel);
+        const filtered = allOptions.filter(opt => 
+            opt.dataset.level.toLowerCase() === selectedLevel
+        );
 
-        // Add filtered options
         filtered.forEach(opt => {
             const newOpt = document.createElement("option");
             newOpt.value = opt.value;
@@ -356,10 +354,10 @@ document.addEventListener("DOMContentLoaded", function() {
             bookSelect.appendChild(newOpt);
         });
 
-        // Enable dropdown only if filtered books exist
         bookSelect.disabled = filtered.length === 0;
     });
 });
+
 </script>
 
 
