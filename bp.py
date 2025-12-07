@@ -97,16 +97,21 @@ class Completion(db.Model):
 
 
 class PhonicsEntry(db.Model):
+    __tablename__ = "phonics_entry"
+
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.String(20), nullable=False)
     student_name = db.Column(db.String(100), nullable=False)
     level = db.Column(db.String(50), nullable=False)
-    book_name = db.Column(db.String(100), nullable=False)   # 👈 new
+    book_name = db.Column(db.String(100), nullable=False)
     time_taken = db.Column(db.Integer, nullable=False)
     feedback = db.Column(db.Text)
     created_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    teacher = db.relationship("User", backref="phonics_entries", foreign_keys=[created_by])
-
+    teacher = db.relationship(
+        "User",
+        backref="phonics_entries",
+        foreign_keys=[created_by]
+    )
 
 with app.app_context():
     db.create_all()
