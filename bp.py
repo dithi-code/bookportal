@@ -235,10 +235,9 @@ def admin_dashboard():
         notifications = Notification.query.order_by(Notification.created_at.desc()).all()
 
         # --- Fetch phonics entries with book & teacher relationships ---
-        phonics_entries = PhonicsEntry.query.options(
-            joinedload(PhonicsEntry.book),     # load book
-            joinedload(PhonicsEntry.teacher)   # load teacher
-        ).order_by(PhonicsEntry.id.desc()).all()
+        phonics_entries = PhonicsEntry.query.order_by(
+            PhonicsEntry.id.desc()
+        ).all()
 
         return render_template(
             'admin_dashboard.html',
