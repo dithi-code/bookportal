@@ -97,16 +97,69 @@
             <label>Book Name</label>
             <select name="book_name" id="bookSelect" class="form-select" required>
               <option value="" disabled selected>Select Book</option>
-              <!-- Add all books here with data-level -->
+
+              <!-- LEVEL 1 -->
               <option value="Snap" data-level="1">Snap</option>
               <option value="Picnic" data-level="1">Picnic</option>
               <option value="Mud" data-level="1">Mud</option>
               <option value="Animals" data-level="1">Animals</option>
+
+              <!-- LEVEL 2 -->
               <option value="Dot" data-level="2">Dot</option>
               <option value="Tap" data-level="2">Tap</option>
               <option value="Big Pig" data-level="2">Big Pig</option>
               <option value="Jam" data-level="2">Jam</option>
-              <!-- continue all other books -->
+
+              <!-- LEVEL 3 -->
+              <option value="A Pet Dog" data-level="3">A Pet Dog</option>
+              <option value="Ten Men" data-level="3">Ten Men</option>
+              <option value="The Fox" data-level="3">The Fox</option>
+              <option value="A Vet" data-level="3">A Vet</option>
+
+              <!-- LEVEL 4 -->
+              <option value="Quick Run" data-level="4">Quick Run</option>
+              <option value="A Long Day" data-level="4">A Long Day</option>
+              <option value="A Fun Trip" data-level="4">A Fun Trip</option>
+              <option value="A Short Walk" data-level="4">A Short Walk</option>
+
+              <!-- LEVEL 5 -->
+              <option value="The Best Gift" data-level="5">The Best Gift</option>
+              <option value="A New Toy" data-level="5">A New Toy</option>
+              <option value="Rainy Day" data-level="5">Rainy Day</option>
+              <option value="At The Zoo" data-level="5">At The Zoo</option>
+
+              <!-- LEVEL 6 -->
+              <option value="The Lost Ball" data-level="6">The Lost Ball</option>
+              <option value="The Little Plant" data-level="6">The Little Plant</option>
+              <option value="The Tall Tree" data-level="6">The Tall Tree</option>
+              <option value="The Swing" data-level="6">The Swing</option>
+
+              <!-- LEVEL 7 -->
+              <option value="My New Friend" data-level="7">My New Friend</option>
+              <option value="The Boat Trip" data-level="7">The Boat Trip</option>
+              <option value="The Brave Kid" data-level="7">The Brave Kid</option>
+              <option value="The Clever Fox" data-level="7">The Clever Fox</option>
+
+              <!-- RED -->
+              {% for i in range(29,47) %}
+              <option value="Book {{i}}" data-level="Red">Book {{i}}</option>
+              {% endfor %}
+
+              <!-- YELLOW -->
+              {% for i in range(47,65) %}
+              <option value="Book {{i}}" data-level="Yellow">Book {{i}}</option>
+              {% endfor %}
+
+              <!-- GREEN -->
+              {% for i in range(65,83) %}
+              <option value="Book {{i}}" data-level="Green">Book {{i}}</option>
+              {% endfor %}
+
+              <!-- BLUE -->
+              {% for i in range(83,101) %}
+              <option value="Book {{i}}" data-level="Blue">Book {{i}}</option>
+              {% endfor %}
+
             </select>
           </div>
 
