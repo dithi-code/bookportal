@@ -314,7 +314,7 @@
             <strong>{{ entry.student_name }}</strong><br>
             <small>Date: {{ entry.date }}</small><br>
             <small>Level: {{ entry.level }}</small><br>
-            <small>Book: {{ entry.book.original_name if entry.book else 'N/A' }}</small><br>
+            <small>Book: {{ entry.book_name }}</small><br>
             <small>Time Taken: {{ entry.time_taken }} min</small><br>
             <p>Feedback: {{ entry.feedback or '-' }}</p>
           </div>
@@ -334,7 +334,7 @@
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const levelSelect = document.getElementById("levelSelectPhonics");
-    const bookSelect = document.getElementById("book_id");   // FIXED
+    const bookSelect = document.getElementById("book_name"); // FIXED
 
     const allOptions = Array.from(bookSelect.querySelectorAll('option[data-level]'));
 
