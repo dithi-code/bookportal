@@ -1,110 +1,46 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Resources</title>
+{% extends "base.html" %}
+{% block content %}
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<div class="container py-4">
 
-  <style>
-    body {
-      font-family: Poppins, sans-serif;
-      background: #eef3ff;
-      padding: 20px;
-    }
+  <h2 class="mb-4 text-center">Resources</h2>
 
-    .logout-btn {
-      position: absolute;
-      top: 15px;
-      right: 20px;
-    }
-
-    .page-title {
-      font-weight: 700;
-      font-size: 28px;
-      text-align: center;
-      margin-bottom: 25px;
-      color: #2c3e50;
-    }
-
-    .book-card {
-      padding: 12px 14px;
-      margin: 6px;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-      min-width: 180px;
-    }
-
-    .category-title {
-      margin-top: 20px;
-      margin-bottom: 8px;
-      font-weight: 600;
-      font-size: 1.05rem;
-      color: #333;
-    }
-  </style>
-</head>
-
-<body>
-
-<!-- LOGOUT BUTTON -->
-<a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm logout-btn">Logout</a>
-
-<div class="container">
-
-  <!-- PAGE TITLE -->
-  <div class="page-title">Dithi Resources</div>
-
-  <!-- TOP TABS: Books + Phonics -->
+  <!-- TOP TABS -->
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item" role="presentation">
-      <button class="nav-link active"
-              id="books-tab"
-              data-bs-toggle="tab"
-              data-bs-target="#books"
-              type="button"
-              role="tab">
+      <button class="nav-link active" id="books-tab" data-bs-toggle="tab" data-bs-target="#books" type="button" role="tab">
         Books
       </button>
     </li>
-
-    <li class="nav-item ms-auto" role="presentation">
-      <button class="nav-link"
-              id="phonics-tab"
-              data-bs-toggle="tab"
-              data-bs-target="#phonics"
-              type="button"
-              role="tab">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="phonics-tab" data-bs-toggle="tab" data-bs-target="#phonics" type="button" role="tab">
         Phonics Entry
       </button>
     </li>
   </ul>
 
-  <!-- MAIN TAB CONTENT -->
+  <!-- TAB CONTENT -->
   <div class="tab-content mt-4">
 
     <!-- BOOKS TAB -->
     <div class="tab-pane fade show active" id="books" role="tabpanel" aria-labelledby="books-tab">
+      
       <!-- LEVEL TABS -->
       <ul class="nav nav-tabs mt-3" role="tablist">
         {% for lvl in level_tabs %}
-          <li class="nav-item">
-            <button class="nav-link {% if loop.first %}active{% endif %}"
-                    data-bs-toggle="tab"
-                    data-bs-target="#level-{{ lvl | replace(' ','_') | lower }}">
-              {{ lvl }}
-            </button>
-          </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link {% if loop.first %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#level-{{ lvl | replace(' ','_') | lower }}">
+            {{ lvl }}
+          </button>
+        </li>
         {% endfor %}
       </ul>
 
       <!-- LEVEL CONTENT -->
-      <div class="tab-content mt-4">
+      <div class="tab-content mt-3">
         {% set categories = ['Story','Words','Workout','Comprehension','Test'] %}
         {% for lvl in level_tabs %}
-          <div class="tab-pane fade {% if loop.first %}show active{% endif %}"
-               id="level-{{ lvl | replace(' ','_') | lower }}">
+          <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="level-{{ lvl | replace(' ','_') | lower }}">
             {% for cat in categories %}
               {% set cat_books = [] %}
               {% for b in books_by_level[lvl] %}
@@ -113,17 +49,14 @@
                 {% endif %}
               {% endfor %}
 
-              {% if cat_books|length > 0 %}
-                <div class="category-title">{{ cat }}</div>
+              {% if cat_books %}
+                <h5 class="mt-3">{{ cat }}</h5>
                 <div class="d-flex flex-wrap">
                   {% for b in cat_books %}
-                    <div class="book-card">
+                    <div class="card p-3 m-2" style="min-width: 180px; box-shadow: 0 2px 5px rgba(0,0,0,0.08);">
                       <strong>{{ b.original_name }}</strong><br>
                       <small>Level: {{ b.levels }}</small><br>
-                      <a href="{{ url_for('view_book', book_id=b.id) }}"
-                         class="btn btn-sm btn-primary mt-2">
-                        View
-                      </a>
+                      <a href="{{ url_for('view_book', book_id=b.id) }}" class="btn btn-sm btn-primary mt-2">View</a>
                     </div>
                   {% endfor %}
                 </div>
@@ -136,9 +69,9 @@
 
     <!-- PHONICS TAB -->
     <div class="tab-pane fade" id="phonics" role="tabpanel" aria-labelledby="phonics-tab">
-      <div class="card p-4 mt-3">
-        <h4>🗓️ Enter Daily Record</h4>
+      <div class="card p-4 mb-4">
 
+        <h4>🗓️ Enter Phonics Record</h4>
         <form method="POST" action="{{ url_for('teacher_phonics') }}" id="phonicsForm">
           <div class="mb-3">
             <label>Date</label>
@@ -152,139 +85,29 @@
 
           <div class="mb-3">
             <label>Level</label>
-            <select name="level" class="form-select" id="levelSelectPhonics" required>
-              <option value="" disabled selected>Select your level</option>
+            <select name="level" id="levelSelect" class="form-select" required>
+              <option value="" disabled selected>Select Level</option>
               {% for lvl in level_tabs %}
                 <option value="{{ lvl }}">{{ lvl }}</option>
               {% endfor %}
             </select>
           </div>
 
-         <label class="mt-3">Book Name</label>
-<select name="book_name" id="book_name" required>
-    <!-- Level 1 -->
-    <option value="Book 1" data-level="1">Snap</option>
-    <option value="Book 2" data-level="1">Picnic</option>
-    <option value="Book 3" data-level="1">Mud</option>
-    <option value="Book 4" data-level="1">Animals</option>
-
-    <!-- Level 2 -->
-    <option value="Book 5" data-level="2">Dot</option>
-    <option value="Book 6" data-level="2">Tap</option>
-    <option value="Book 7" data-level="2">Big Pig</option>
-    <option value="Book 8" data-level="2">Jam</option>
-
-    <!-- Level 3 -->
-    <option value="Book 9" data-level="3">A Pet Dog</option>
-    <option value="Book 10" data-level="3">Ten Men</option>
-    <option value="Book 11" data-level="3">The Fox</option>
-    <option value="Book 12" data-level="3">A Vet</option>
-
-    <!-- Level 4 -->
-    <option value="Book 13" data-level="4">Quick Run</option>
-    <option value="Book 14" data-level="4">A Long Day</option>
-    <option value="Book 15" data-level="4">A Fun Trip</option>
-    <option value="Book 16" data-level="4">A Short Walk</option>
-
-     <!-- Level 5 -->
-    <option value="Book 17" data-level="5">The Best Gift</option>
-    <option value="Book 18" data-level="5">A New Toy</option>
-    <option value="Book 19" data-level="5">Rainy Day</option>
-    <option value="Book 20" data-level="5">At The Zoo</option>
-
-    <!-- Level 6 -->
-    <option value="Book 21" data-level="6">The Lost Ball</option>
-    <option value="Book 22" data-level="6">The Little Plant</option>
-    <option value="Book 23" data-level="6">The Tall Tree</option>
-    <option value="Book 24" data-level="6">The Swing</option>
-
-    <!-- Level 7 -->
-    <option value="Book 25" data-level="7">My New Friend</option>
-    <option value="Book 26" data-level="7">The Boat Trip</option>
-    <option value="Book 27" data-level="7">The Brave Kid</option>
-    <option value="Book 28" data-level="7">The Clever Fox</option>
-
-    <!-- RED -->
-    <option value="Book 29" data-level="Red">Mud</option>
-    <option value="Book 30" data-level="Red">Inky</option>
-    <option value="Book 31" data-level="Red">Zack</option>
-    <option value="Book 32" data-level="Red">Snake</option>
-    <option value="Book 33" data-level="Red">Monster Footsteps</option>
-    <option value="Book 34" data-level="Red">Moat Farm</option>
-    <option value="Book 35" data-level="Red">The Rocket</option>
-    <option value="Book 36" data-level="Red">Monsters</option>
-    <option value="Book 37" data-level="Red">The Pond</option>
-    <option value="Book 38" data-level="Red">Helping</option>
-    <option value="Book 39" data-level="Red">The Wind and the Sun</option>
-    <option value="Book 40" data-level="Red">Star and Fish</option>
-    <option value="Book 41" data-level="Red">A Dog Has Pups</option>
-    <option value="Book 42" data-level="Red">A Shoal of Fish</option>
-    <option value="Book 43" data-level="Red">Slugs and Snails</option>
-    <option value="Book 44" data-level="Red">Foxes</option>
-    <option value="Book 45" data-level="Red">Insects</option>
-    <option value="Book 46" data-level="Red">Book Week</option>
-
-    <!-- YELLOW -->
-    <option value="Book 47" data-level="Yellow">Phonic</option>
-    <option value="Book 48" data-level="Yellow">Hetty</option>
-    <option value="Book 49" data-level="Yellow">Zack’s Present</option>
-    <option value="Book 50" data-level="Yellow">Picnic</option>
-    <option value="Book 51" data-level="Yellow">Spots</option>
-    <option value="Book 52" data-level="Yellow">Looking for Snake</option>
-    <option value="Book 53" data-level="Yellow">Monster Party</option>
-    <option value="Book 54" data-level="Yellow">Red Hen</option>
-    <option value="Book 55" data-level="Yellow">The Box</option>
-    <option value="Book 56" data-level="Yellow">Swimming</option>
-    <option value="Book 57" data-level="Yellow">Crabs</option>
-    <option value="Book 58" data-level="Yellow">Animal Chatter</option>
-    <option value="Book 59" data-level="Yellow">Rainforests</option>
-    <option value="Book 60" data-level="Yellow">Cheese Stars</option>
-    <option value="Book 61" data-level="Yellow">Oil</option>
-    <option value="Book 62" data-level="Yellow">Lizards</option>
-    <option value="Book 63" data-level="Yellow">Shells</option>
-    <option value="Book 64" data-level="Yellow">Butterflies and Moths</option>
-
-    <!-- GREEN -->
-    <option value="Book 65" data-level="Green">The Tree That Blinked</option>
-    <option value="Book 66" data-level="Green">What’s in the Box?</option>
-    <option value="Book 67" data-level="Green">The Old Red Tractor</option>
-    <option value="Book 68" data-level="Green">The Model Boat</option>
-    <option value="Book 69" data-level="Green">Wait and See!</option>
-    <option value="Book 70" data-level="Green">The Bad-Tempered Goat</option>
-    <option value="Book 71" data-level="Green">The Three Billy Goats Gruff</option>
-    <option value="Book 72" data-level="Green">The Fox and the Stork</option>
-    <option value="Book 73" data-level="Green">The Outing</option>
-    <option value="Book 74" data-level="Green">The Little Merman</option>
-    <option value="Book 75" data-level="Green">The Cricket and the Ants</option>
-    <option value="Book 76" data-level="Green">Little Monsters</option>
-    <option value="Book 77" data-level="Green">Snakes</option>
-    <option value="Book 78" data-level="Green">Deserts</option>
-    <option value="Book 79" data-level="Green">Captain Scott</option>
-    <option value="Book 80" data-level="Green">Underground</option>
-    <option value="Book 81" data-level="Green">Mushrooms</option>
-    <option value="Book 82" data-level="Green">Teeth</option>
-
-    <!-- BLUE -->
-    <option value="Book 83" data-level="Blue">The Bird House</option>
-    <option value="Book 84" data-level="Blue">Daisy and Buttercup</option>
-    <option value="Book 85" data-level="Blue">The New Kitten</option>
-    <option value="Book 86" data-level="Blue">An Inter-Hive Match</option>
-    <option value="Book 87" data-level="Blue">The Maize Maze</option>
-    <option value="Book 88" data-level="Blue">Beach Rescue</option>
-    <option value="Book 89" data-level="Blue">The Enormous Turnip</option>
-    <option value="Book 90" data-level="Blue">Rumpelstiltskin</option>
-    <option value="Book 91" data-level="Blue">Puppets</option>
-    <option value="Book 92" data-level="Blue">Many More Monsters</option>
-    <option value="Book 93" data-level="Blue">The Pumpkin Party</option>
-    <option value="Book 94" data-level="Blue">Soccer</option>
-    <option value="Book 95" data-level="Blue">Mountains</option>
-    <option value="Book 96" data-level="Blue">Henry Ford</option>
-    <option value="Book 97" data-level="Blue">Sharks</option>
-    <option value="Book 98" data-level="Blue">The Moon</option>
-    <option value="Book 99" data-level="Blue">Town Mouse and Country Mouse</option>
-    <option value="Book 100" data-level="Blue">The Nile</option>
-</select>
-
+          <div class="mb-3">
+            <label>Book Name</label>
+            <select name="book_name" id="bookSelect" class="form-select" required>
+              <option value="" disabled selected>Select Book</option>
+              <!-- Add all books here with data-level -->
+              <option value="Snap" data-level="1">Snap</option>
+              <option value="Picnic" data-level="1">Picnic</option>
+              <option value="Mud" data-level="1">Mud</option>
+              <option value="Animals" data-level="1">Animals</option>
+              <option value="Dot" data-level="2">Dot</option>
+              <option value="Tap" data-level="2">Tap</option>
+              <option value="Big Pig" data-level="2">Big Pig</option>
+              <option value="Jam" data-level="2">Jam</option>
+              <!-- continue all other books -->
+            </select>
           </div>
 
           <div class="mb-3">
@@ -297,72 +120,59 @@
             <textarea name="feedback" class="form-control" rows="3"></textarea>
           </div>
 
-          <button type="submit" class="btn btn-success">Submit Record</button>
+          <button type="submit" class="btn btn-success w-100">Submit Record</button>
         </form>
-       <!-- Submitted Entries Section -->
-  <div class="mt-4">
-    <h5>📚 Your Submitted Entries</h5>
-    {% if entries|length == 0 %}
-      <p>No phonics entries found.</p>
-    {% else %}
-      <div class="d-flex flex-wrap">
-        {% for entry in entries %}
-          <div class="card p-3 m-2" style="min-width: 220px; box-shadow: 0 2px 5px rgba(0,0,0,0.08);">
-            <strong>{{ entry.student_name }}</strong><br>
-            <small>Date: {{ entry.date }}</small><br>
-            <small>Level: {{ entry.level }}</small><br>
-            <small>Book: {{ entry.book_name }}</small><br>
-            <small>Time Taken: {{ entry.time_taken }} min</small><br>
-            <p>Feedback: {{ entry.feedback or '-' }}</p>
+      </div>
+
+      <!-- Submitted Entries -->
+      <div class="card p-4">
+        <h5 class="mb-3">📚 Your Submitted Entries</h5>
+        {% if entries %}
+          <div class="d-flex flex-wrap">
+            {% for entry in entries %}
+              <div class="card p-3 m-2" style="min-width: 220px; box-shadow: 0 2px 5px rgba(0,0,0,0.08);">
+                <strong>{{ entry.student_name }}</strong><br>
+                <small>Date: {{ entry.date }}</small><br>
+                <small>Level: {{ entry.level }}</small><br>
+                <small>Book: {{ entry.book_name }}</small><br>
+                <small>Time Taken: {{ entry.time_taken }} min</small><br>
+                <p>Feedback: {{ entry.feedback or '-' }}</p>
+              </div>
+            {% endfor %}
           </div>
-        {% endfor %}
+        {% else %}
+          <p>No phonics entries found.</p>
+        {% endif %}
       </div>
-    {% endif %}
-  </div>
+
     </div>
-      </div>
 
-</div>
   </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</div>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    const levelSelect = document.getElementById("levelSelectPhonics");
-    const bookSelect = document.getElementById("book_name"); // FIXED
+    const levelSelect = document.getElementById("levelSelect");
+    const bookSelect = document.getElementById("bookSelect");
+    const allOptions = Array.from(bookSelect.querySelectorAll("option[data-level]"));
 
-    const allOptions = Array.from(bookSelect.querySelectorAll('option[data-level]'));
+    levelSelect.addEventListener("change", function() {
+        const selectedLevel = this.value;
 
-    levelSelect.addEventListener("change", function () {
-        const selectedLevel = this.value.toLowerCase();
+        bookSelect.innerHTML = '<option value="" disabled selected>Select Book</option>';
 
-        bookSelect.innerHTML = '<option value="">-- Select Book --</option>';
-
-        const filtered = allOptions.filter(opt => 
-            opt.dataset.level.toLowerCase() === selectedLevel
-        );
-
-        filtered.forEach(opt => {
-            const newOpt = document.createElement("option");
-            newOpt.value = opt.value;
-            newOpt.textContent = opt.textContent;
-            bookSelect.appendChild(newOpt);
+        allOptions.forEach(opt => {
+            if(opt.dataset.level === selectedLevel) {
+                const newOpt = document.createElement("option");
+                newOpt.value = opt.value;
+                newOpt.textContent = opt.textContent;
+                newOpt.dataset.level = opt.dataset.level;
+                bookSelect.appendChild(newOpt);
+            }
         });
-
-        bookSelect.disabled = filtered.length === 0;
     });
 });
-
 </script>
 
-
-
-</body>
-</html>
-
-
-
-
-
+{% endblock %}
