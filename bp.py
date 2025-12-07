@@ -532,7 +532,7 @@ def teacher_phonics():
         feedback = request.form.get("feedback", "")
 
         # Required field check
-        if not (date and student_name and level and book_id and time_taken):
+        if not (date and student_name and level and book_name and time_taken):
             flash("⚠️ Please fill all required fields.", "danger")
             return redirect(url_for("teacher_phonics"))
 
