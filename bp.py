@@ -103,7 +103,7 @@ class PhonicsEntry(db.Model):
     date = db.Column(db.String(20), nullable=False)
     student_name = db.Column(db.String(100), nullable=False)
     level = db.Column(db.String(50), nullable=False)
-    book_name = db.Column(db.String(100), nullable=False)
+    book_name = db.Column(db.String(100), nullable=False)   # ✅ NOT book_id
     time_taken = db.Column(db.Integer, nullable=False)
     feedback = db.Column(db.Text)
     created_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
@@ -113,6 +113,7 @@ class PhonicsEntry(db.Model):
         backref="phonics_entries",
         foreign_keys=[created_by]
     )
+
 
 
 with app.app_context():
