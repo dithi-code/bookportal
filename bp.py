@@ -522,7 +522,7 @@ def teacher_phonics():
         date = request.form.get("date")
         student_name = request.form.get("student_name")
         level = request.form.get("level")
-        book_id = request.form.get("book_id")
+        book_name = request.form.get("book_name")
         time_taken = request.form.get("time_taken")
         feedback = request.form.get("feedback", "")
 
@@ -536,8 +536,8 @@ def teacher_phonics():
                 date=date,
                 student_name=student_name,
                 level=level,
-                book_id=int(book_id),       
-                time_taken=int(time_taken), 
+                book_name=book_name,       
+                time_taken=time_taken, 
                 feedback=feedback,
                 created_by=current_user.id
             )
