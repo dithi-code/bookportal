@@ -267,6 +267,21 @@ def admin_dashboard():
         return f"Server Error: {str(e)}", 500
 
 
+@app.route("/admin/phonics_entries")
+@login_required
+def admin_phonics_entries():
+    if not current_user.is_admin:
+        return redirect(url_for("login"))
+
+    phonics_entries = PhonicsEntry.query.order_by(PhonicsEntry.date.desc()).all()
+
+    return render_template(
+        "admin_phonics_entries.html",
+        phonics_entries=phonics_entries,
+        tab="phonics"
+    )
+
+
 @app.route('/admin/approve/<int:user_id>', methods=['POST'])
 @login_required
 def admin_approve(user_id):
