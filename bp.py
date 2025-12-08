@@ -247,7 +247,7 @@ def admin_dashboard():
             PhonicsEntry.id.desc()
         ).all()
         levels = sorted({p.level for p in phonics_entries if p.level})
-        teacher_list = sorted({p.teacher.name for p in phonics_entries if p.teacher})
+        teachers_list = sorted({p.teacher.name for p in phonics_entries if p.teacher})
         
         return render_template(
             'admin_dashboard.html',
