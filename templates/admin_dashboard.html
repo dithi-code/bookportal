@@ -249,6 +249,9 @@
               {% endfor %}
             </select>
           </div>
+<div class="col-md-12 mt-2">
+  <button id="resetFilters" class="btn btn-secondary w-100">Reset Filters</button>
+</div>
 
         </div>
 
@@ -323,7 +326,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const levelBox = document.getElementById("levelFilter");
   const teacherBox = document.getElementById("teacherFilter");
   const rows = document.querySelectorAll("#phonicsTable tbody tr");
-
+const resetBtn = document.getElementById("resetFilters");
   function filter() {
     const search = searchBox.value.toLowerCase();
     const lvl = levelBox.value;
@@ -340,6 +343,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
       row.style.display = (okSearch && okLevel && okTeacher) ? "" : "none";
     });
+   resetBtn.addEventListener("click", function () {
+  // clear inputs
+  searchBox.value = "";
+  levelBox.value = "";
+  teacherBox.value = "";
+
+  // show all rows
+  rows.forEach(row => row.style.display = "");
+}); 
   }
 
   searchBox.addEventListener("keyup", filter);
