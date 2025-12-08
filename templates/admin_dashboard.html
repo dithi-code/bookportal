@@ -232,21 +232,23 @@
       <!-- Level Filter -->
       <div class="col-md-4">
         <select id="levelFilter" class="form-control">
-          <option value="">All Levels</option>
-          {% for lvl in levels %}
-          <option value="{{ lvl }}">{{ lvl }}</option>
-          {% endfor %}
-        </select>
+  <option value="">All Levels</option>
+  {% for lvl in levels %}
+  <option value="{{ lvl }}">{{ lvl }}</option>
+  {% endfor %}
+</select>
+
       </div>
 
       <!-- Teacher Filter -->
       <div class="col-md-4">
         <select id="teacherFilter" class="form-control">
-          <option value="">All Teachers</option>
-          {% for t in teachers %}
-          <option value="{{ t }}">{{ t }}</option>
-          {% endfor %}
-        </select>
+  <option value="">All Teachers</option>
+  {% for t in teachers_list %}
+  <option value="{{ t }}">{{ t }}</option>
+  {% endfor %}
+</select>
+
       </div>
 
     </div>
