@@ -258,7 +258,7 @@ def admin_dashboard():
             tab=tab,
             search_query=search,
             levels=levels,               
-            teachers_list=teacher_list   
+            teachers_list=teachers_list   
         )
 
 
