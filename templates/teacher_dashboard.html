@@ -93,7 +93,7 @@
             </select>
           </div>
 
-         <label class="mt-3">Book Name</label>
+      <label class="mt-3">Book Name</label>
 <select name="book_name" id="book_name" class="form-select" required>
   <option value="" disabled selected>-- Select Book --</option>
 
@@ -263,27 +263,29 @@
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const levelSelect = document.getElementById("levelSelect");
-    const bookSelect = document.getElementById("bookSelect");
-    const allOptions = Array.from(bookSelect.querySelectorAll("option[data-level]"));
+document.addEventListener('DOMContentLoaded', function () {
+    const levelSelect = document.getElementById('level');
+    const bookSelect = document.getElementById('book_name');
 
-    levelSelect.addEventListener("change", function() {
-        const selectedLevel = this.value;
+    function filterBooks() {
+        const selectedLevel = levelSelect.value;
 
-        bookSelect.innerHTML = '<option value="" disabled selected>Select Book</option>';
+        Array.from(bookSelect.options).forEach(option => {
+            if (!option.dataset.level) return;
 
-        allOptions.forEach(opt => {
-            if(opt.dataset.level === selectedLevel) {
-                const newOpt = document.createElement("option");
-                newOpt.value = opt.value;
-                newOpt.textContent = opt.textContent;
-                newOpt.dataset.level = opt.dataset.level;
-                bookSelect.appendChild(newOpt);
+            if (option.dataset.level === selectedLevel) {
+                option.style.display = '';
+            } else {
+                option.style.display = 'none';
             }
         });
-    });
+
+        bookSelect.value = "";
+    }
+
+    levelSelect.addEventListener('change', filterBooks);
 });
 </script>
+
 
 {% endblock %}
