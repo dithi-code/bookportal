@@ -212,7 +212,8 @@
     </div>
 
     <!-- PHONICS TAB -->
-   <div class="tab-pane fade {% if tab=='phonics' %}show active{% endif %}" id="phonics">
+  <div class="tab-pane fade {% if tab=='phonics' %}show active{% endif %}" id="phonics">
+
   <div class="card p-3 mt-3">
     <h4 class="mb-3">Phonics Entries</h4>
 
@@ -220,27 +221,26 @@
       <p>No phonics entries found.</p>
     {% else %}
 
-    <!-- 🔍 FILTERS -->
+    <!-- FILTER BAR -->
     <div class="row mb-3">
-      
+
       <!-- Search -->
       <div class="col-md-4">
-        <input type="text" id="searchInput" class="form-control"
-               placeholder="Search student / book / teacher / feedback">
+        <input type="text" id="searchInput" class="form-control" placeholder="Search...">
       </div>
 
       <!-- Level Filter -->
-      <div class="col-md-3">
+      <div class="col-md-4">
         <select id="levelFilter" class="form-control">
           <option value="">All Levels</option>
           {% for lvl in levels %}
-          <option value="{{ lvl }}">Level {{ lvl }}</option>
+          <option value="{{ lvl }}">{{ lvl }}</option>
           {% endfor %}
         </select>
       </div>
 
       <!-- Teacher Filter -->
-      <div class="col-md-3">
+      <div class="col-md-4">
         <select id="teacherFilter" class="form-control">
           <option value="">All Teachers</option>
           {% for t in teachers %}
@@ -264,19 +264,21 @@
             <th>Feedback</th>
           </tr>
         </thead>
+
         <tbody>
           {% for p in phonics_entries %}
           <tr>
             <td>{{ p.date }}</td>
             <td>{{ p.student_name }}</td>
             <td>{{ p.level }}</td>
-            <td>{{ p.book_name or "No Book" }}</td>
+            <td>{{ p.book_name }}</td>
             <td>{{ p.time_taken }} mins</td>
-            <td>{{ p.teacher.name if p.teacher else "Unknown" }}</td>
-            <td>{{ p.feedback or "-" }}</td>
+            <td>{{ p.teacher.name if p.teacher else 'Unknown' }}</td>
+            <td>{{ p.feedback or '-' }}</td>
           </tr>
           {% endfor %}
         </tbody>
+
       </table>
     </div>
 
@@ -284,39 +286,40 @@
   </div>
 </div>
 
-<!-- 🔥 LIVE FILTER SCRIPT -->
+<!-- LIVE SEARCH + FILTER SCRIPT -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    const search = document.getElementById("searchInput");
-    const level = document.getElementById("levelFilter");
-    const teacher = document.getElementById("teacherFilter");
-    const rows = document.querySelectorAll("#phonicsTable tbody tr");
+  const searchBox = document.getElementById("searchInput");
+  const levelBox = document.getElementById("levelFilter");
+  const teacherBox = document.getElementById("teacherFilter");
+  const rows = document.querySelectorAll("#phonicsTable tbody tr");
 
-    function filterTable() {
-        const s = search.value.toLowerCase();
-        const l = level.value;
-        const t = teacher.value;
+  function filter() {
+    const search = searchBox.value.toLowerCase();
+    const lvl = levelBox.value;
+    const t = teacherBox.value;
 
-        rows.forEach(row => {
-            const text = row.innerText.toLowerCase();
-            const rowLevel = row.children[2].innerText;
-            const rowTeacher = row.children[5].innerText;
+    rows.forEach(row => {
+      const rowText = row.innerText.toLowerCase();
+      const rowLevel = row.children[2].innerText;
+      const rowTeacher = row.children[5].innerText;
 
-            const matchSearch = text.includes(s);
-            const matchLevel = !l || l === rowLevel;
-            const matchTeacher = !t || t === rowTeacher;
+      const okSearch = rowText.includes(search);
+      const okLevel = !lvl || rowLevel === lvl;
+      const okTeacher = !t || rowTeacher === t;
 
-            row.style.display = (matchSearch && matchLevel && matchTeacher) ? "" : "none";
-        });
-    }
+      row.style.display = (okSearch && okLevel && okTeacher) ? "" : "none";
+    });
+  }
 
-    search.addEventListener("keyup", filterTable);
-    level.addEventListener("change", filterTable);
-    teacher.addEventListener("change", filterTable);
+  searchBox.addEventListener("keyup", filter);
+  levelBox.addEventListener("change", filter);
+  teacherBox.addEventListener("change", filter);
 
 });
 </script>
+
 
 
     <!-- NOTIFICATIONS TAB -->
