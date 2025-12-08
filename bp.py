@@ -246,7 +246,9 @@ def admin_dashboard():
         phonics_entries = PhonicsEntry.query.order_by(
             PhonicsEntry.id.desc()
         ).all()
-
+        levels = sorted({p.level for p in phonics_entries if p.level})
+        teacher_list = sorted({p.teacher.name for p in phonics_entries if p.teacher})
+        
         return render_template(
             'admin_dashboard.html',
             teachers=teachers,
@@ -254,8 +256,11 @@ def admin_dashboard():
             notifications=notifications,
             phonics_entries=phonics_entries,
             tab=tab,
-            search_query=search
+            search_query=search,
+            levels=levels,               
+            teachers_list=teacher_list   
         )
+
 
     except Exception as e:
         app.logger.exception("Error in admin_dashboard")
