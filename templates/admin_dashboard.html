@@ -41,38 +41,36 @@
   </div>
 
   <!-- TABS -->
-  <ul class="nav nav-tabs" id="adminTabs" role="tablist">
-    <li class="nav-item">
-      <button class="nav-link {% if tab=='teachers' %}active{% endif %}"
-              data-bs-toggle="tab" data-bs-target="#teachers">
-        Teachers
-      </button>
-    </li>
+  <ul class="nav nav-tabs">
+  <li class="nav-item">
+    <a class="nav-link {% if tab=='teachers' %}active{% endif %}"
+       href="{{ url_for('admin_dashboard', tab='teachers') }}">
+      Teachers
+    </a>
+  </li>
 
-    <li class="nav-item">
-      <button class="nav-link {% if tab=='books' %}active{% endif %}"
-              data-bs-toggle="tab" data-bs-target="#books">
-        Books
-      </button>
-    </li>
+  <li class="nav-item">
+    <a class="nav-link {% if tab=='books' %}active{% endif %}"
+       href="{{ url_for('admin_dashboard', tab='books') }}">
+      Books
+    </a>
+  </li>
 
-    <li class="nav-item">
-  <button class="nav-link {% if tab=='phonics' %}active{% endif %}"
-          data-bs-toggle="tab" data-bs-target="#phonics">
-    Phonics Entries
-  </button>
-</li>
+  <li class="nav-item">
+    <a class="nav-link {% if tab=='phonics' %}active{% endif %}"
+       href="{{ url_for('admin_dashboard', tab='phonics') }}">
+      Phonics Entries
+    </a>
+  </li>
 
+  <li class="nav-item">
+    <a class="nav-link {% if tab=='notifications' %}active{% endif %}"
+       href="{{ url_for('admin_dashboard', tab='notifications') }}">
+      Notifications
+    </a>
+  </li>
+</ul>
 
-    <li class="nav-item">
-      <button class="nav-link {% if tab=='notifications' %}active{% endif %}"
-              data-bs-toggle="tab" data-bs-target="#notifications">
-        Notifications
-      </button>
-    </li>
-  </ul>
-
-  <div class="tab-content">
 
     <!-- TEACHERS TAB -->
     <div class="tab-pane fade {% if tab=='teachers' %}show active{% endif %}" id="teachers">
