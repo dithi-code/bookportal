@@ -191,21 +191,42 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html')
 
+from sqlalchemy import func
+
+from sqlalchemy import func
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        name = request.form.get('name', '').strip()
+
+        # Normalize input: remove spaces + lowercase
+        raw_name = request.form.get('name', '')
+        name = raw_name.strip().lower()
+
         password = request.form.get('password', '')
-        user = User.query.filter_by(name=name).first()
+
+        # Case-insensitive query
+        user = User.query.filter(func.lower(User.name) == name).first()
+
         if not user or not user.check_password(password):
-            flash('Invalid name or password'); return redirect(url_for('login'))
-        if user.role == 'teacher':
+            flash("Invalid name or password", "danger")
+            return redirect(url_for('login'))
+
+        # Teacher restrictions
+        if user.role == "teacher":
             if not user.is_approved or not user.allow_login:
-                flash('Your account is not approved or blocked'); return redirect(url_for('login'))
+                flash("Your account is not approved or blocked", "danger")
+                return redirect(url_for('login'))
+
         login_user(user)
-        flash('Login successful')
-        return redirect(url_for('admin_dashboard') if user.role=='admin' else url_for('teacher_dashboard'))
-    return render_template('login.html')
+        flash("Login successful", "success")
+
+        return redirect(
+            url_for("admin_dashboard") if user.role == "admin"
+            else url_for("teacher_dashboard")
+        )
+
+    return render_template("login.html")
 
 @app.route('/logout')
 @login_required
