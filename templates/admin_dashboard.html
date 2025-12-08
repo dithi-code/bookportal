@@ -326,7 +326,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const levelBox = document.getElementById("levelFilter");
   const teacherBox = document.getElementById("teacherFilter");
   const rows = document.querySelectorAll("#phonicsTable tbody tr");
-const resetBtn = document.getElementById("resetFilters");
+  const resetBtn = document.getElementById("resetFilters");
+
   function filter() {
     const search = searchBox.value.toLowerCase();
     const lvl = levelBox.value;
@@ -343,16 +344,16 @@ const resetBtn = document.getElementById("resetFilters");
 
       row.style.display = (okSearch && okLevel && okTeacher) ? "" : "none";
     });
-   resetBtn.addEventListener("click", function () {
-  // clear inputs
-  searchBox.value = "";
-  levelBox.value = "";
-  teacherBox.value = "";
-
-  // show all rows
-  rows.forEach(row => row.style.display = "");
-}); 
   }
+
+  // ✅ RESET BUTTON OUTSIDE filter() — correct!
+  resetBtn.addEventListener("click", function () {
+    searchBox.value = "";
+    levelBox.value = "";
+    teacherBox.value = "";
+
+    rows.forEach(row => row.style.display = "");
+  });
 
   searchBox.addEventListener("keyup", filter);
   levelBox.addEventListener("change", filter);
