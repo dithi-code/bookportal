@@ -291,51 +291,59 @@
     </div>
 
     <!-- NOTIFICATIONS TAB -->
+ <!-- NOTIFICATIONS TAB -->
+<div class="tab-pane fade {% if tab=='notifications' %}show active{% endif %}" id="notifications">
+
   <div class="card p-3 mt-3">
-  <h4>Notifications</h4>
+    <h4 class="mb-3">Notifications</h4>
 
-  <!-- FILTER BAR -->
-  <form method="get" class="row g-2 mb-3">
+    {% if notifications|length == 0 %}
+      <p>No notifications found.</p>
+    {% else %}
 
-    <input type="hidden" name="tab" value="notifications">
+    <!-- FILTERS -->
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <select id="notifTeacherFilter" class="form-control">
+          <option value="">All Teachers</option>
+          {% set teacher_names = [] %}
+          {% for n in notifications %}
+            {% if "Teacher " in n.message %}
+              {% set teacher = n.message.split("Teacher ")[1].split(" ")[0] %}
+              {% if teacher not in teacher_names %}
+                {% do teacher_names.append(teacher) %}
+                <option value="{{ teacher }}">{{ teacher }}</option>
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        </select>
+      </div>
 
-    <div class="col-md-8">
-      <select name="teacher_filter" class="form-control">
-        <option value="">All Teachers</option>
-        {% for t in notification_teachers %}
-        <option value="{{ t }}" {% if teacher_filter == t %}selected{% endif %}>{{ t }}</option>
-        {% endfor %}
-      </select>
+      <div class="col-md-6">
+        <button id="notifReset" class="btn btn-secondary w-100">Reset</button>
+      </div>
     </div>
 
-    <div class="col-md-2">
-      <button class="btn btn-primary w-100">Search</button>
-    </div>
-
-    <div class="col-md-2">
-      <a href="{{ url_for('admin_dashboard', tab='notifications') }}" 
-         class="btn btn-secondary w-100">Reset</a>
-    </div>
-
-  </form>
-
-  {% if notifications|length == 0 %}
-    <p>No notifications found.</p>
-  {% else %}
+    <!-- CLEAR ALL BUTTON -->
     <form method="POST" action="/admin/clear_notifications" class="mb-3">
       <button type="submit" class="btn btn-danger btn-sm">Clear All</button>
     </form>
 
-    <ul class="list-group">
+    <!-- NOTIFICATION LIST -->
+    <ul class="list-group" id="notifList">
       {% for n in notifications %}
       <li class="list-group-item d-flex justify-content-between">
-        {{ n.message }}
+        <span class="notif-text">{{ n.message }}</span>
         <small class="text-muted">{{ n.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
       </li>
       {% endfor %}
     </ul>
-  {% endif %}
+
+    {% endif %}
+  </div>
+
 </div>
+
 
 </div> <!-- container -->
 
@@ -378,6 +386,32 @@ document.addEventListener("DOMContentLoaded", function () {
   searchBox.addEventListener("keyup", filter);
   levelBox.addEventListener("change", filter);
   teacherBox.addEventListener("change", filter);
+
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  const notifFilter = document.getElementById("notifTeacherFilter");
+  const notifReset = document.getElementById("notifReset");
+  const notifItems = document.querySelectorAll("#notifList li");
+
+  function filterNotifications() {
+    const teacher = notifFilter.value;
+
+    notifItems.forEach(item => {
+      const text = item.querySelector(".notif-text").innerText;
+      const match = (teacher === "" || text.includes("Teacher " + teacher));
+      item.style.display = match ? "" : "none";
+    });
+  }
+
+  notifFilter.addEventListener("change", filterNotifications);
+
+  notifReset.addEventListener("click", () => {
+    notifFilter.value = "";
+    notifItems.forEach(item => item.style.display = "");
+  });
 
 });
 </script>
