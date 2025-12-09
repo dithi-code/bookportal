@@ -303,23 +303,14 @@ def admin_dashboard():
 
 
 def create_notification(teacher_name, action, book_name):
-    # Build message
     if action.lower() == "view":
         msg = f'{teacher_name} viewed "{book_name}".'
-    elif action.lower() == "right_click":
-        msg = f'{teacher_name} attempted Right Click on "{book_name}".'
-    elif action.lower() == "open_attempt":
-        msg = f'{teacher_name} attempted to open "{book_name}".'
     else:
-        msg = f'{teacher_name} performed "{action}" on "{book_name}".'
-
-    
-    notification = Notification(
-        message=msg,
-        teacher_name=teacher_name
-    )
+        msg = f'{teacher_name} {action} "{book_name}".'
+    notification = Notification(message=msg, teacher_name=teacher_name)
     db.session.add(notification)
     db.session.commit()
+
 
 
 
