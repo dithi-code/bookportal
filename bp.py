@@ -480,17 +480,34 @@ def stream_book(book_id):
 @login_required
 def notify_attempt():
     data = request.get_json(silent=True) or request.form
-    
-    action = data.get('type', '').strip()
+
+    raw_action = data.get('type', '').strip().lower()
     book_name = data.get('book', '').strip()
 
-    if not action or not book_name:
+    if not raw_action or not book_name:
         return jsonify({"status": "bad request"}), 400
 
-    # Use your helper function
+    # Normalize actions
+    if "view" in raw_action:
+        action = "view"
+
+    elif "open" in raw_action:
+        action = "open"
+
+    elif "right" in raw_action or "right_click" in raw_action:
+        action = "right_click"
+
+    elif "download" in raw_action:
+        action = "download"
+
+    else:
+        action = raw_action  # fallback
+
+    # Create notification with cleaned action
     create_notification(current_user.name, action, book_name)
 
     return jsonify({'status': 'ok'}), 200
+
 
 
 
