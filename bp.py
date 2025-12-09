@@ -91,6 +91,8 @@ class Notification(db.Model):
     seen = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     user = db.relationship('User', backref='notifications')
+    teacher_name = db.Column(db.String(150), nullable=True)
+
 
 
 
