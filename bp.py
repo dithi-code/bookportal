@@ -89,8 +89,6 @@ class Notification(db.Model):
     message = db.Column(db.String(1000))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     seen = db.Column(db.Boolean, default=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    user = db.relationship('User', backref='notifications')
     teacher_name = db.Column(db.String(150), nullable=True)
 
 
@@ -304,19 +302,22 @@ def admin_dashboard():
         return f"Server Error: {str(e)}", 500
 
 
-def create_notification(student_name, action, book_name):
-    
-    msg = ""
+def create_notification(teacher_name, action, book_name):
+    # Build message
     if action.lower() == "view":
-        msg = f'{student_name} viewed "{book_name}".'
+        msg = f'{teacher_name} viewed "{book_name}".'
     elif action.lower() == "right_click":
-        msg = f'{student_name} attempted a right-click on "{book_name}".'
+        msg = f'{teacher_name} attempted Right Click on "{book_name}".'
     elif action.lower() == "open_attempt":
-        msg = f'{student_name} attempted to open "{book_name}".'
+        msg = f'{teacher_name} attempted to open "{book_name}".'
     else:
-        msg = f'{student_name} performed "{action}" on "{book_name}".'
+        msg = f'{teacher_name} performed "{action}" on "{book_name}".'
 
-    notification = Notification(message=msg)
+    
+    notification = Notification(
+        message=msg,
+        teacher_name=teacher_name
+    )
     db.session.add(notification)
     db.session.commit()
 
