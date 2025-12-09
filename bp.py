@@ -476,18 +476,24 @@ def stream_book(book_id):
         mimetype=book.content_type or 'application/pdf'
     )
 
-
-
 @app.route('/notify_attempt', methods=['POST'])
 @login_required
 def notify_attempt():
     data = request.get_json(silent=True) or request.form
-    typ = data.get('type')
-    book = data.get('book')
-    if typ:
-        notify_admin(f"{current_user.name} attempted {typ}" + (f" on {book}" if book else ''))
-        return jsonify({'status':'ok'}),200
-    return jsonify({'status':'bad request'}),400
+    
+    action = data.get('type', '').strip()
+    book_name = data.get('book', '').strip()
+
+    if not action or not book_name:
+        return jsonify({"status": "bad request"}), 400
+
+    # Use your helper function
+    create_notification(current_user.name, action, book_name)
+
+    return jsonify({'status': 'ok'}), 200
+
+
+
 
 # ----------------------------
 # Teacher dashboard
