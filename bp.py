@@ -89,8 +89,8 @@ class Notification(db.Model):
     message = db.Column(db.String(1000))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     seen = db.Column(db.Boolean, default=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user = db.relationship("User", backref="notifications")
+    teacher_name = db.Column(db.String(150), nullable=True)
+
 
 
 class Completion(db.Model):
