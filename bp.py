@@ -301,6 +301,20 @@ def admin_dashboard():
         app.logger.exception("Error in admin_dashboard")
         return f"Server Error: {str(e)}", 500
 
+@app.route("/admin/delete_phonics_entries", methods=["POST"])
+@login_required
+def delete_phonics_entries():
+    ids = request.form.getlist("entry_ids")
+
+    if not ids:
+        flash("No entries selected!", "warning")
+        return redirect(url_for("admin_dashboard", tab="phonics"))
+
+    PhonicsEntry.query.filter(PhonicsEntry.id.in_(ids)).delete(synchronize_session=False)
+    db.session.commit()
+
+    flash("Selected entries deleted successfully!", "success")
+    return redirect(url_for("admin_dashboard", tab="phonics"))
 
 @app.route("/admin/phonics_entries")
 @login_required
