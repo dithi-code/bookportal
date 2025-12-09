@@ -304,6 +304,24 @@ def admin_dashboard():
         return f"Server Error: {str(e)}", 500
 
 
+def create_notification(student_name, action, book_name):
+    
+    msg = ""
+    if action.lower() == "view":
+        msg = f'{student_name} viewed "{book_name}".'
+    elif action.lower() == "right_click":
+        msg = f'{student_name} attempted a right-click on "{book_name}".'
+    elif action.lower() == "open_attempt":
+        msg = f'{student_name} attempted to open "{book_name}".'
+    else:
+        msg = f'{student_name} performed "{action}" on "{book_name}".'
+
+    notification = Notification(message=msg)
+    db.session.add(notification)
+    db.session.commit()
+
+
+
 @app.route("/admin/delete_phonics_entries", methods=["POST"])
 @login_required
 def delete_phonics_entries():
