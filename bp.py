@@ -247,29 +247,40 @@ def admin_dashboard():
         return redirect(url_for('login'))
 
     try:
-        # Active tab and search
-        tab = request.args.get('tab', 'teachers')   # default to teachers
+        # Active tab
+        tab = request.args.get('tab', 'teachers')
         search = request.args.get('search', '').strip()
 
-        # --- Fetch teachers ---
+        # ---------- TEACHERS ----------
         teachers = User.query.filter_by(role='teacher').all()
 
-        # --- Fetch books, optionally filtered by search ---
+        # ---------- BOOKS ----------
         books_query = Book.query.order_by(Book.uploaded_at.desc())
         if search:
             books_query = books_query.filter(Book.original_name.ilike(f"%{search}%"))
         books = books_query.all()
 
-        # --- Fetch notifications ---
-        notifications = Notification.query.order_by(Notification.created_at.desc()).all()
-
-        # --- Fetch phonics entries with book & teacher relationships ---
-        phonics_entries = PhonicsEntry.query.order_by(
-            PhonicsEntry.id.desc()
-        ).all()
+        # ---------- PHONICS ----------
+        phonics_entries = PhonicsEntry.query.order_by(PhonicsEntry.id.desc()).all()
         levels = sorted({p.level for p in phonics_entries if p.level})
         teachers_list = sorted({p.teacher.name for p in phonics_entries if p.teacher})
-        
+
+        # ---------- NOTIFICATIONS FILTER ----------
+        teacher_filter = request.args.get("teacher_filter", "").strip().lower()
+
+        notification_query = Notification.query.join(User, Notification.user_id == User.id)
+
+        # if teacher selected
+        if teacher_filter:
+            notification_query = notification_query.filter(
+                func.lower(User.name).like(f"%{teacher_filter}%")
+            )
+
+        notifications = notification_query.order_by(Notification.created_at.desc()).all()
+
+        # teacher dropdown options
+        notification_teachers = sorted({n.user.name for n in Notification.query.join(User).all()})
+
         return render_template(
             'admin_dashboard.html',
             teachers=teachers,
@@ -278,10 +289,13 @@ def admin_dashboard():
             phonics_entries=phonics_entries,
             tab=tab,
             search_query=search,
-            levels=levels,               
-            teachers_list=teachers_list   
-        )
+            levels=levels,
+            teachers_list=teachers_list,
 
+            # NEW DATA FOR NOTIFICATIONS TAB
+            notification_teachers=notification_teachers,
+            teacher_filter=teacher_filter
+        )
 
     except Exception as e:
         app.logger.exception("Error in admin_dashboard")
