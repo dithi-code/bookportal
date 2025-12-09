@@ -320,18 +320,12 @@
     <div class="row mb-3">
       <div class="col-md-6">
         <select id="notifTeacherFilter" class="form-control">
-          <option value="">All Teachers</option>
-          {% set teacher_names = [] %}
-          {% for n in notifications %}
-            {% if "Teacher " in n.message %}
-              {% set teacher = n.message.split("Teacher ")[1].split(" ")[0] %}
-              {% if teacher not in teacher_names %}
-                {% do teacher_names.append(teacher) %}
-                <option value="{{ teacher }}">{{ teacher }}</option>
-              {% endif %}
-            {% endif %}
-          {% endfor %}
-        </select>
+  <option value="">All Teachers</option>
+  {% for teacher in notification_teachers %}
+    <option value="{{ teacher }}" {% if teacher_filter == teacher.lower() %}selected{% endif %}>{{ teacher }}</option>
+  {% endfor %}
+</select>
+
       </div>
 
       <div class="col-md-6">
