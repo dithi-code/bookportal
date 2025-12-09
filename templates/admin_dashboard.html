@@ -291,31 +291,51 @@
     </div>
 
     <!-- NOTIFICATIONS TAB -->
-    <div class="tab-pane fade {% if tab=='notifications' %}show active{% endif %}" id="notifications">
+  <div class="card p-3 mt-3">
+  <h4>Notifications</h4>
 
-      <div class="card p-3 mt-3">
-        <h4>Notifications</h4>
+  <!-- FILTER BAR -->
+  <form method="get" class="row g-2 mb-3">
 
-        {% if notifications|length == 0 %}
-          <p>No new notifications.</p>
-        {% else %}
-        <form method="POST" action="/admin/clear_notifications" class="mb-3">
-          <button type="submit" class="btn btn-danger btn-sm">Clear All</button>
-        </form>
+    <input type="hidden" name="tab" value="notifications">
 
-        <ul class="list-group">
-          {% for n in notifications %}
-          <li class="list-group-item d-flex justify-content-between">
-            {{ n.message }}
-            <small class="text-muted">{{ n.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
-          </li>
-          {% endfor %}
-        </ul>
-        {% endif %}
-      </div>
+    <div class="col-md-8">
+      <select name="teacher_filter" class="form-control">
+        <option value="">All Teachers</option>
+        {% for t in notification_teachers %}
+        <option value="{{ t }}" {% if teacher_filter == t %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
     </div>
 
-  </div> <!-- END TAB CONTENT -->
+    <div class="col-md-2">
+      <button class="btn btn-primary w-100">Search</button>
+    </div>
+
+    <div class="col-md-2">
+      <a href="{{ url_for('admin_dashboard', tab='notifications') }}" 
+         class="btn btn-secondary w-100">Reset</a>
+    </div>
+
+  </form>
+
+  {% if notifications|length == 0 %}
+    <p>No notifications found.</p>
+  {% else %}
+    <form method="POST" action="/admin/clear_notifications" class="mb-3">
+      <button type="submit" class="btn btn-danger btn-sm">Clear All</button>
+    </form>
+
+    <ul class="list-group">
+      {% for n in notifications %}
+      <li class="list-group-item d-flex justify-content-between">
+        {{ n.message }}
+        <small class="text-muted">{{ n.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+      </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</div>
 
 </div> <!-- container -->
 
