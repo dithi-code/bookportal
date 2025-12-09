@@ -306,7 +306,7 @@
 
 
     <!-- NOTIFICATIONS TAB -->
- <!-- NOTIFICATIONS TAB -->
+<!-- NOTIFICATIONS TAB -->
 <div class="tab-pane fade {% if tab=='notifications' %}show active{% endif %}" id="notifications">
 
   <div class="card p-3 mt-3">
@@ -320,12 +320,13 @@
     <div class="row mb-3">
       <div class="col-md-6">
         <select id="notifTeacherFilter" class="form-control">
-  <option value="">All Teachers</option>
-  {% for teacher in notification_teachers %}
-    <option value="{{ teacher }}" {% if teacher_filter == teacher.lower() %}selected{% endif %}>{{ teacher }}</option>
-  {% endfor %}
-</select>
-
+          <option value="">All Teachers</option>
+          {% for teacher in notification_teachers %}
+            <option value="{{ teacher }}" {% if teacher_filter == teacher %}selected{% endif %}>
+              {{ teacher }}
+            </option>
+          {% endfor %}
+        </select>
       </div>
 
       <div class="col-md-6">
@@ -342,7 +343,11 @@
     <ul class="list-group" id="notifList">
       {% for n in notifications %}
       <li class="list-group-item d-flex justify-content-between">
-        <span class="notif-text">{{ n.message }}</span>
+        <div>
+          <strong>{{ n.teacher_name }}</strong>
+          — 
+          <span class="notif-text">{{ n.message }}</span>
+        </div>
         <small class="text-muted">{{ n.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
       </li>
       {% endfor %}
@@ -352,7 +357,6 @@
   </div>
 
 </div>
-
 
 </div> <!-- container -->
 
